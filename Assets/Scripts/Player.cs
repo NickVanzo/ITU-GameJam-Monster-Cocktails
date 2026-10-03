@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-enum Rooms {
+public enum Rooms {
     MainRoom,
     Kitchen
 }
@@ -9,6 +9,7 @@ enum Rooms {
 public class Player : MonoBehaviour
 {
     private Rooms currentRoom;
+    public Rooms CurrentRoom => currentRoom;
     public Transform mainCamera; // Assign your main Camera Transform here
     public Transform kitchenCameraPosition;
     public Transform customersCameraPosition;
@@ -25,6 +26,8 @@ public class Player : MonoBehaviour
         
         toCustomersButton.SetActive(false);
         toKitchenButton.SetActive(true);
+        
+        MoveCameraTo(customersCameraPosition);
     }
 
     public void ChangeRoom()
