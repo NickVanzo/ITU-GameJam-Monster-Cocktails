@@ -3,7 +3,6 @@ using System.Collections.Generic;
 public static class MaterialInventory
 {
     public static event System.Action OnChanged;
-
     static readonly Dictionary<IngredientType, int> s_Stock = new();
 
     public static int GetCount(IngredientType type)
@@ -19,6 +18,8 @@ public static class MaterialInventory
 
     public static bool TryConsume(IngredientType type)
     {
+        if (type == IngredientType.Gin || type == IngredientType.Vodka) return true;
+        
         int nCount = GetCount(type);
         if(nCount <= 0)
         {

@@ -8,6 +8,7 @@ TagManager:
   - FlushButton
   - ServeButton
   - Head
+  - Water
   layers:
   - Default
   - TransparentFX

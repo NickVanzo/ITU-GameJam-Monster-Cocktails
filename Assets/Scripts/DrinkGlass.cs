@@ -4,52 +4,56 @@ using UnityEngine;
 public class DrinkGlass : MonoBehaviour
 {
     [SerializeField] private Transform ingredientSpawn;
-    [SerializeField] private float ingredientStackHeight = 0.15f;
+    [SerializeField] private GameObject juicePrefab;
+    [SerializeField] private Renderer waterRenderer;
 
-    private readonly List<GameObject> ingredients = new();
+    private readonly List<GameObject> fallingJuices = new();
+    private readonly List<IngredientType> containedIngredients = new();
 
-    public void AddIngredient(GameObject ingredient)
+    private Color baseWaterColor;
+
+    void Awake()
     {
-        var newIngredient = Instantiate(ingredient, ingredientSpawn);
-        newIngredient.transform.SetParent(ingredientSpawn);
-        newIngredient.transform.localPosition = ingredientSpawn.localPosition;
-        newIngredient.transform.localRotation = Quaternion.identity;
+        baseWaterColor = waterRenderer.material.color;
+    }
 
-        ingredients.Add(newIngredient);
+    public void AddIngredient(IngredientType type)
+    {
+        GameObject juiceInstance = Instantiate(juicePrefab, ingredientSpawn.position, Quaternion.identity);
+        juiceInstance.GetComponent<IngredientJuice>().Initialize(type, this);
+
+        fallingJuices.Add(juiceInstance);
+    }
+
+    public void NotifyIngredientLanded(IngredientType type, Color ingredientColor, GameObject juiceInstance)
+    {
+        fallingJuices.Remove(juiceInstance);
+        containedIngredients.Add(type);
+        TintWater(ingredientColor);
+        Destroy(juiceInstance);
     }
 
     public void Flush()
     {
-        foreach (GameObject ingredient in ingredients)
+        foreach (GameObject juice in fallingJuices)
         {
-            Destroy(ingredient);
+            Destroy(juice);
         }
 
-        ingredients.Clear();
+        fallingJuices.Clear();
+        containedIngredients.Clear();
+        waterRenderer.material.color = baseWaterColor;
     }
 
-    public void ServeTo(DrinkGlass targetGlass)
+    private void TintWater(Color ingredientColor)
     {
-        foreach (GameObject ingredient in ingredients)
-        {
-            targetGlass.AddIngredient(ingredient);
-        }
-
-        Flush();
+        Color currentColor = waterRenderer.material.color;
+        float mixWeight = 1f / containedIngredients.Count;
+        waterRenderer.material.color = Color.Lerp(currentColor, ingredientColor, mixWeight);
     }
 
     public List<IngredientType> GetIngredientTypes()
     {
-        List<IngredientType> types = new(ingredients.Count);
-
-        foreach (GameObject ingredient in ingredients)
-        {
-            if (ingredient.TryGetComponent(out Ingredient ingredientComponent))
-            {
-                types.Add(ingredientComponent.type);
-            }
-        }
-
-        return types;
+        return new List<IngredientType>(containedIngredients);
     }
 }

@@ -8,7 +8,6 @@ public class PlayerInteraction : MonoBehaviour
 
     [SerializeField] private Player player;
     [SerializeField] private DrinkGlass kitchenGlass;
-    [SerializeField] private DrinkGlass customerGlass;
     [SerializeField] private float interactionDistance = 100f;
 
     void Update()
@@ -29,18 +28,18 @@ public class PlayerInteraction : MonoBehaviour
         {
             if (target.TryGetComponent(out Ingredient ingredient) && MaterialInventory.TryConsume(ingredient.type))
             {
-                GetActiveGlass().AddIngredient(target);
+                Debug.Log($"{ingredient.type.ToString().ToUpper()} consumed");
+                kitchenGlass.AddIngredient(ingredient.type);
             }
         }
         else if (target.CompareTag(FlushButtonTag))
         {
-            GetActiveGlass().Flush();
+            kitchenGlass.Flush();
         }
         else if (target.CompareTag(ServeButtonTag))
         {
-            kitchenGlass.ServeTo(customerGlass);
-            CustomerManager.Instance.ActiveCustomer?.ReceiveDrink(customerGlass.GetIngredientTypes());
-            customerGlass.Flush();
+            CustomerManager.Instance.ActiveCustomer?.ReceiveDrink(kitchenGlass.GetIngredientTypes());
+            kitchenGlass.Flush();
         }
         else
         {
@@ -56,10 +55,5 @@ public class PlayerInteraction : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         return Physics.Raycast(ray, out hit, interactionDistance);
-    }
-
-    private DrinkGlass GetActiveGlass()
-    {
-        return player.CurrentRoom == Rooms.Kitchen ? kitchenGlass : customerGlass;
     }
 }

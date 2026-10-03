@@ -22,6 +22,9 @@ public class Player : MonoBehaviour
 
     void Start()
     {
+        MaterialInventory.Add(IngredientType.Crux, 100);
+        MaterialInventory.Add(IngredientType.ZombieBrain, 100);
+        
         currentRoom = Rooms.MainRoom;
         
         toCustomersButton.SetActive(false);
