@@ -353,8 +353,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 2471420642917217076}
-  requiredIngredients: 00000000
-  requestLine: Hello I want grapes
+  requiredIngredients: 040000000100000003000000
+  requestLine: Hi, I'll have a Bloody Mary
   wrongDrinkLine: Not this shit!
   satisfiedLine: It slaps, thanks
   retryDelaySeconds: 3

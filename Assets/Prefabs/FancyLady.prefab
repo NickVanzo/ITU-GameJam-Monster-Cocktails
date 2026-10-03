@@ -250,7 +250,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 2471420642917217076}
-  requiredIngredients: 00000000
+  requiredIngredients: 000000000200000005000000
   requestLine: I feel cadaveric today, hand me a corpse reviver honey.
   wrongDrinkLine: Are u joking?
   satisfiedLine: That hit the spot.
