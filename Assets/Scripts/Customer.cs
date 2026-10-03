@@ -11,6 +11,7 @@ public class Customer : MonoBehaviour
     {
         MovingToCounter,
         WaitingForDrink,
+        InDialogue,
         MovingToExit,
         MovingToDespawn
     }
@@ -27,13 +28,17 @@ public class Customer : MonoBehaviour
     [SerializeField] private string satisfiedLine;
     [SerializeField] private float retryDelaySeconds = 5f;
     [SerializeField] private float satisfiedDisplaySeconds = 2f;
+    [SerializeField] private float dialogueEndDelaySeconds = 2f;
 
     [SerializeField] private GameObject dialogueCanvas;
     [SerializeField] private TMP_Text dialogueText;
 
+    [SerializeField] private Dialogue startingDialogue;
+
     public event System.Action<Customer, string> OnSpeak;
 
     private State state;
+    private Dialogue currentDialogue;
 
     void Start()
     {
@@ -46,7 +51,7 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
-        if (state == State.WaitingForDrink)
+        if (state == State.WaitingForDrink || state == State.InDialogue)
         {
             return;
         }
@@ -86,7 +91,7 @@ public class Customer : MonoBehaviour
         if (IsCorrectDrink(servedIngredients))
         {
             Speak(satisfiedLine);
-            StartCoroutine(LeaveCounterAfterDelay());
+            StartCoroutine(BeginDialogueAfterDelay());
         }
         else
         {
@@ -122,9 +127,65 @@ public class Customer : MonoBehaviour
         Speak(requestLine);
     }
 
-    private IEnumerator LeaveCounterAfterDelay()
+    private IEnumerator BeginDialogueAfterDelay()
     {
         yield return new WaitForSeconds(satisfiedDisplaySeconds);
+
+        currentDialogue = startingDialogue;
+        state = State.InDialogue;
+        ShowCurrentDialogue();
+    }
+
+    private void ShowCurrentDialogue()
+    {
+        dialogueText.text = currentDialogue.text;
+        dialogueCanvas.SetActive(true);
+
+        if (currentDialogue.options == null || currentDialogue.options.Length == 0)
+        {
+            DialogueChoiceUI.Instance.Hide();
+            StartCoroutine(EndDialogueAfterDelay());
+            return;
+        }
+
+        var choiceCallbacks = new UnityEngine.Events.UnityAction[currentDialogue.options.Length];
+        for (int i = 0; i < choiceCallbacks.Length; i++)
+        {
+            int choiceIndex = i;
+            choiceCallbacks[i] = () => SelectDialogueChoice(choiceIndex);
+        }
+
+        DialogueChoiceUI.Instance.Show(currentDialogue.options, choiceCallbacks);
+    }
+
+    private void SelectDialogueChoice(int choiceIndex)
+    {
+        if (state != State.InDialogue)
+        {
+            return;
+        }
+
+        Dialogue next = null;
+        if (currentDialogue.nextDialogue != null && choiceIndex < currentDialogue.nextDialogue.Length)
+        {
+            next = currentDialogue.nextDialogue[choiceIndex];
+        }
+
+        if (next != null)
+        {
+            currentDialogue = next;
+            ShowCurrentDialogue();
+        }
+        else
+        {
+            DialogueChoiceUI.Instance.Hide();
+            StartCoroutine(EndDialogueAfterDelay());
+        }
+    }
+
+    private IEnumerator EndDialogueAfterDelay()
+    {
+        yield return new WaitForSeconds(dialogueEndDelaySeconds);
 
         dialogueCanvas.SetActive(false);
         state = State.MovingToExit;

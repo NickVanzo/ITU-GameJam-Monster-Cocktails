@@ -361,6 +361,9 @@ MonoBehaviour:
   satisfiedDisplaySeconds: 2
   dialogueCanvas: {fileID: 768828985739485192}
   dialogueText: {fileID: 7798852464678380476}
+  startingDialogue: {fileID: 11400000, guid: ff258a1dd647a467a96053523b09dd21, type: 2}
+  dialogueChoice1Button: {fileID: 0}
+  dialogueChoice2Button: {fileID: 0}
 --- !u!1 &3394218148561574158
 GameObject:
   m_ObjectHideFlags: 0

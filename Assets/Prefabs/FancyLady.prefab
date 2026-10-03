@@ -258,6 +258,9 @@ MonoBehaviour:
   satisfiedDisplaySeconds: 2
   dialogueCanvas: {fileID: 6366502705328986319}
   dialogueText: {fileID: 3712062880630475240}
+  dialoguesText:
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!1 &5489048530437813572
 GameObject:
   m_ObjectHideFlags: 0
