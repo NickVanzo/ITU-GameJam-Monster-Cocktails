@@ -1,11 +1,13 @@
-using System.Collections;
-using System.Data;
 using UnityEngine;
 
 [CreateAssetMenu]
 public class IMonster : ScriptableObject
 {
-    string sName;
-    float fMoveSpeed = 10.0f; 
-    Ingredient Loot;
+    public string sName;
+    public float fMoveSpeed = 2.2f;
+    public int nHealth = 2;
+    public int nDamage = 1;
+    public IngredientType Loot;
+    public int nLootCount = 1;
+    [Range(0.0f, 1.0f)] public float fLootChance = 1.0f;
 }

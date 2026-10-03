@@ -2,7 +2,8 @@ using UnityEngine;
 
 public enum IngredientType
 {
-    Grapes,
+    ZombieBrain,
+    HolyBlood,
 }
 
 public class Ingredient : MonoBehaviour

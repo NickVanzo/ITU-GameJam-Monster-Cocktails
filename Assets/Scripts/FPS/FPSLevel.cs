@@ -1,25 +1,365 @@
 using System.Collections;
-using System.Data;
+using System.Collections.Generic;
+using System.Text;
+using TMPro;
+using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FPSLevel : MonoBehaviour
 {
     public Spawner spawner;
+    public FPSController Player;
+    public Transform ArenaElevator;
+    public Transform PlayerSpawn;
+    public CinemachineCamera FPSCamera;
+    public CinemachineBrain Brain;
 
-    bool bIsReady = false;
+    [Header("Bar")]
+    public Behaviour[] aDisableDuringFPS;
+    public GameObject[] aHideDuringFPS;
+
+    [Header("UI")]
+    public GameObject Hud;
+    public TMP_Text HudText;
+    public TMP_Text PromptText;
+    public Image Crosshair;
+    public Image DamageFlash;
+    public CanvasGroup Fader;
+    public TMP_Text FaderText;
+
+    [Header("Elevator")]
+    [SerializeField] float fDescentDuration = 1.0f;
+    [SerializeField] float fDescentDistance = 4.0f;
+    [SerializeField] float fRideDuration = 1.2f;
+    [SerializeField] float fRideHeight = 4.0f;
+    [SerializeField] float fFadeDuration = 0.35f;
+    [SerializeField] float fMessageDuration = 1.2f;
+
+    [Header("Harvest")]
+    [SerializeField] bool bLoseHaulOnDeath = true;
+    [SerializeField] float fDamageFlashAlpha = 0.35f;
+    [SerializeField] Color HeadshotColor = new(1.0f, 0.2f, 0.2f);
+
+    readonly Dictionary<IngredientType, int> m_Haul = new();
+    bool bInEncounter = false;
+    bool bTransitioning = false;
+    Camera m_Camera;
+    Vector3 m_vBarCameraPosition;
+    Quaternion m_qBarCameraRotation;
+    float m_fBarFieldOfView;
+    float m_fBarNearClip;
+    Vector3 m_vElevatorRest;
+    float m_fCrosshairFlash;
+    bool bHeadshotFlash;
+
+    void Awake()
+    {
+        MaterialInventory.Clear();
+        m_Camera = Brain.GetComponent<Camera>();
+        m_vElevatorRest = ArenaElevator.position;
+        Brain.enabled = false;
+        FPSCamera.gameObject.SetActive(false);
+        Player.gameObject.SetActive(false);
+        Hud.SetActive(false);
+        Fader.alpha = 0.0f;
+        FaderText.text = "";
+        SetFlashAlpha(0.0f);
+    }
+
+    void OnEnable()
+    {
+        spawner.OnMaterialCollected += HandleMaterialCollected;
+        Player.OnHurt += HandlePlayerHurt;
+        Player.OnDied += HandlePlayerDied;
+        Player.OnHitEnemy += HandleHitEnemy;
+    }
+
+    void OnDisable()
+    {
+        spawner.OnMaterialCollected -= HandleMaterialCollected;
+        Player.OnHurt -= HandlePlayerHurt;
+        Player.OnDied -= HandlePlayerDied;
+        Player.OnHitEnemy -= HandleHitEnemy;
+    }
+
+    public void Enter()
+    {
+        if(bInEncounter || bTransitioning)
+        {
+            return;
+        }
+
+        StartCoroutine(EnterRoutine());
+    }
+
+    public void Leave()
+    {
+        if(!bInEncounter)
+        {
+            return;
+        }
+
+        bInEncounter = false;
+        StartCoroutine(ExitRoutine(true));
+    }
+
+    IEnumerator EnterRoutine()
+    {
+        bTransitioning = true;
+        SetBarActive(false);
+
+        Transform cameraTransform = m_Camera.transform;
+        m_vBarCameraPosition = cameraTransform.position;
+        m_qBarCameraRotation = cameraTransform.rotation;
+        m_fBarFieldOfView = m_Camera.fieldOfView;
+        m_fBarNearClip = m_Camera.nearClipPlane;
+
+        Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
+        for(float fElapsed = 0.0f; fElapsed < fDescentDuration; fElapsed += Time.deltaTime)
+        {
+            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDescentDuration);
+            Vector3 vRumble = new Vector3(Mathf.PerlinNoise(fElapsed * 25.0f, 0.0f) - 0.5f, Mathf.PerlinNoise(0.0f, fElapsed * 25.0f) - 0.5f, 0.0f) * 0.04f;
+            cameraTransform.position = Vector3.Lerp(m_vBarCameraPosition, vBottom, t) + vRumble;
+            Fader.alpha = Mathf.InverseLerp(fDescentDuration - fFadeDuration, fDescentDuration, fElapsed);
+            yield return null;
+        }
+        Fader.alpha = 1.0f;
+
+        Vector3 vTop = m_vElevatorRest + Vector3.up * fRideHeight;
+        ArenaElevator.position = vTop;
+        StartEncounter();
+
+        yield return RideElevator(vTop, m_vElevatorRest, true);
+
+        Player.SetCanMove(true);
+        spawner.StartSpawning();
+        bInEncounter = true;
+        bTransitioning = false;
+    }
 
     public void StartEncounter()
     {
-        spawner.Reset();
+        m_Haul.Clear();
+        Player.Spawn(PlayerSpawn.position, PlayerSpawn.rotation);
+        Player.gameObject.SetActive(true);
+        FPSCamera.gameObject.SetActive(true);
+        Brain.enabled = true;
+        Hud.SetActive(true);
+        PromptText.text = "";
+        SetFlashAlpha(0.0f);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        RefreshHud();
     }
 
-    public void EndEncounter()
+    IEnumerator RideElevator(Vector3 vFrom, Vector3 vTo, bool bFadeIn)
     {
-        
+        Vector3 vPlayerOffset = Player.transform.position - ArenaElevator.position;
+
+        for(float fElapsed = 0.0f; fElapsed < fRideDuration; fElapsed += Time.deltaTime)
+        {
+            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fRideDuration);
+            ArenaElevator.position = Vector3.Lerp(vFrom, vTo, t);
+            Player.Teleport(ArenaElevator.position + vPlayerOffset);
+            Fader.alpha = bFadeIn
+                ? 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed)
+                : Mathf.InverseLerp(fRideDuration - fFadeDuration, fRideDuration, fElapsed);
+            yield return null;
+        }
+
+        ArenaElevator.position = vTo;
+        Player.Teleport(vTo + vPlayerOffset);
+        Fader.alpha = bFadeIn ? 0.0f : 1.0f;
+    }
+
+    IEnumerator ExitRoutine(bool bExtracted)
+    {
+        bTransitioning = true;
+        spawner.StopSpawning();
+        Player.SetCanMove(false);
+        PromptText.text = "";
+
+        string sMessage;
+        if(bExtracted)
+        {
+            yield return RideElevator(m_vElevatorRest, m_vElevatorRest + Vector3.up * fRideHeight, false);
+            sMessage = BankHaul();
+        }
+        else
+        {
+            sMessage = "YOU DIED";
+            if(bLoseHaulOnDeath)
+            {
+                if(m_Haul.Count > 0)
+                {
+                    sMessage += "\nHARVEST LOST";
+                }
+                m_Haul.Clear();
+            }
+            else
+            {
+                sMessage += "\n" + BankHaul();
+            }
+
+            FaderText.text = sMessage;
+            yield return Fade(0.0f, 1.0f);
+        }
+
+        FaderText.text = sMessage;
+        if(!string.IsNullOrEmpty(sMessage))
+        {
+            yield return new WaitForSeconds(fMessageDuration);
+        }
+
+        spawner.Clear();
+        ArenaElevator.position = m_vElevatorRest;
+        Player.gameObject.SetActive(false);
+        FPSCamera.gameObject.SetActive(false);
+        Brain.enabled = false;
+        Hud.SetActive(false);
+        FaderText.text = "";
+
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        m_Camera.fieldOfView = m_fBarFieldOfView;
+        m_Camera.nearClipPlane = m_fBarNearClip;
+
+        Transform cameraTransform = m_Camera.transform;
+        cameraTransform.rotation = m_qBarCameraRotation;
+        Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
+        for(float fElapsed = 0.0f; fElapsed < fDescentDuration; fElapsed += Time.deltaTime)
+        {
+            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDescentDuration);
+            cameraTransform.position = Vector3.Lerp(vBottom, m_vBarCameraPosition, t);
+            Fader.alpha = 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed);
+            yield return null;
+        }
+        cameraTransform.position = m_vBarCameraPosition;
+        Fader.alpha = 0.0f;
+
+        SetBarActive(true);
+        bTransitioning = false;
     }
 
     public void Update()
     {
-        
+        if(!bInEncounter)
+        {
+            return;
+        }
+
+        if(DamageFlash.color.a > 0.0f)
+        {
+            SetFlashAlpha(Mathf.MoveTowards(DamageFlash.color.a, 0.0f, Time.deltaTime * 1.5f));
+        }
+
+        m_fCrosshairFlash = Mathf.MoveTowards(m_fCrosshairFlash, 0.0f, Time.deltaTime * 6.0f);
+        Crosshair.color = Color.Lerp(Color.white, bHeadshotFlash ? HeadshotColor : Color.white, m_fCrosshairFlash);
+        Crosshair.rectTransform.localScale = Vector3.one * (1.0f + m_fCrosshairFlash * (bHeadshotFlash ? 1.5f : 0.6f));
+
+        PromptText.text = Player.LookedAtRope != null ? "HOLD [E] TO GO UP" : "";
+    }
+
+    IEnumerator Fade(float fFrom, float fTo)
+    {
+        for(float t = 0.0f; t < 1.0f; t += Time.deltaTime / fFadeDuration)
+        {
+            Fader.alpha = Mathf.Lerp(fFrom, fTo, t);
+            yield return null;
+        }
+        Fader.alpha = fTo;
+    }
+
+    string BankHaul()
+    {
+        if(m_Haul.Count == 0)
+        {
+            return "";
+        }
+
+        var builder = new StringBuilder("HARVESTED");
+        foreach(KeyValuePair<IngredientType, int> pair in m_Haul)
+        {
+            MaterialInventory.Add(pair.Key, pair.Value);
+            builder.Append($"\n{pair.Key.ToString().ToUpper()} x{pair.Value}");
+        }
+
+        m_Haul.Clear();
+        return builder.ToString();
+    }
+
+    void HandleMaterialCollected(IngredientType type, int amount)
+    {
+        if(!bInEncounter)
+        {
+            return;
+        }
+
+        m_Haul[type] = (m_Haul.TryGetValue(type, out int nCount) ? nCount : 0) + amount;
+        RefreshHud();
+    }
+
+    void HandleHitEnemy(bool bHeadshot)
+    {
+        m_fCrosshairFlash = 1.0f;
+        bHeadshotFlash = bHeadshot;
+    }
+
+    void HandlePlayerHurt()
+    {
+        SetFlashAlpha(fDamageFlashAlpha);
+        RefreshHud();
+    }
+
+    void HandlePlayerDied()
+    {
+        if(!bInEncounter)
+        {
+            return;
+        }
+
+        bInEncounter = false;
+        StartCoroutine(ExitRoutine(false));
+    }
+
+    void RefreshHud()
+    {
+        var builder = new StringBuilder($"HP {Player.Current}/{Player.Max}");
+        foreach(KeyValuePair<IngredientType, int> pair in m_Haul)
+        {
+            builder.Append($"\n{pair.Key.ToString().ToUpper()} x{pair.Value}");
+        }
+
+        HudText.text = builder.ToString();
+    }
+
+    void SetFlashAlpha(float fAlpha)
+    {
+        Color color = DamageFlash.color;
+        color.a = fAlpha;
+        DamageFlash.color = color;
+    }
+
+    void SetBarActive(bool bActive)
+    {
+        foreach(Behaviour behaviour in aDisableDuringFPS)
+        {
+            if(behaviour != null)
+            {
+                behaviour.enabled = bActive;
+            }
+        }
+
+        foreach(GameObject go in aHideDuringFPS)
+        {
+            if(go != null)
+            {
+                go.SetActive(bActive);
+            }
+        }
     }
 }

@@ -27,7 +27,10 @@ public class PlayerInteraction : MonoBehaviour
 
         if (target.CompareTag(IngredientTag))
         {
-            GetActiveGlass().AddIngredient(target);
+            if (target.TryGetComponent(out Ingredient ingredient) && MaterialInventory.TryConsume(ingredient.type))
+            {
+                GetActiveGlass().AddIngredient(target);
+            }
         }
         else if (target.CompareTag(FlushButtonTag))
         {
@@ -38,6 +41,14 @@ public class PlayerInteraction : MonoBehaviour
             kitchenGlass.ServeTo(customerGlass);
             CustomerManager.Instance.ActiveCustomer?.ReceiveDrink(customerGlass.GetIngredientTypes());
             customerGlass.Flush();
+        }
+        else
+        {
+            ElevatorRope rope = target.GetComponentInParent<ElevatorRope>();
+            if (rope != null)
+            {
+                rope.BeginDrag();
+            }
         }
     }
 
