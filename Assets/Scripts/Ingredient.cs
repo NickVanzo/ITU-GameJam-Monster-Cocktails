@@ -6,7 +6,8 @@ public enum IngredientType
     HolyBlood,
     Gin,
     Vodka,
-    Crux
+    Crux,
+    Rat
 }
 
 public class Ingredient : MonoBehaviour
