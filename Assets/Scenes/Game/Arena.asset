@@ -35,11 +35,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7fd9488000d3734a9e00ee676215985, type: 3}
-  m_Name: VOlume Profile
+  m_Name: Arena
   m_EditorClassIdentifier: 
   components:
   - {fileID: -816121140635821932}
   - {fileID: 1887234245128223328}
+  - {fileID: 8157892336450643041}
 --- !u!114 &1887234245128223328
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -55,16 +56,32 @@ MonoBehaviour:
   active: 1
   color:
     m_OverrideState: 1
-    m_Value: {r: 0, g: 0, b: 0, a: 1}
+    m_Value: {r: 0.066037714, g: 0.066037714, b: 0.066037714, a: 1}
   center:
     m_OverrideState: 1
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.296
+    m_Value: 0.3
   smoothness:
     m_OverrideState: 1
     m_Value: 1
   rounded:
     m_OverrideState: 0
     m_Value: 0
+--- !u!114 &8157892336450643041
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85be07acbc9085540b5f9e1e31bba3f6, type: 3}
+  m_Name: RoomLighting
+  m_EditorClassIdentifier: 
+  active: 1
+  ShadowColor:
+    m_OverrideState: 1
+    m_Value: {r: 0.02745098, g: 0, b: 0.007843138, a: 1}

@@ -54,6 +54,7 @@ public class PlayerInteraction : MonoBehaviour
     private bool TryRaycastFromCursor(out RaycastHit hit)
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        return Physics.Raycast(ray, out hit, interactionDistance);
+        // Ignore triggers so volume bounds and other trigger zones don't block clicks.
+        return Physics.Raycast(ray, out hit, interactionDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 }

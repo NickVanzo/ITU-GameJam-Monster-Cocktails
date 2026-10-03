@@ -2,29 +2,6 @@
 #define FADE_CUSTOM_LIGHTING_INCLUDED
 
 // ============================================================================
-// KEYWORDS
-// ============================================================================
-
-#ifndef SHADERGRAPH_PREVIEW
-
-// Avoid duplicate keyword declarations when included from graphs/passes
-// that already define URP lighting variants.
-#if SHADERPASS != SHADERPASS_FORWARD && SHADERPASS != SHADERPASS_GBUFFER
-
-#pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-#pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
-
-#pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
-#pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
-
-#pragma multi_compile _ _CLUSTER_LIGHT_LOOP
-
-#endif
-
-#endif
-
-
-// ============================================================================
 // MAIN LIGHT
 // ============================================================================
 
@@ -47,12 +24,7 @@ void MainLight_float(
 
     float4 shadowCoord = TransformWorldToShadowCoord(PositionWS);
 
-    Light light = GetMainLight(
-        shadowCoord,
-        PositionWS,
-        half4(1.0, 1.0, 1.0, 1.0)
-    );
-
+    Light light = GetMainLight( shadowCoord, PositionWS, half4(1.0, 1.0, 1.0, 1.0));
     Direction = light.direction;
     Color = light.color;
     DistanceAttenuation = light.distanceAttenuation;
@@ -502,6 +474,57 @@ void AmbientLight_float(
 #else
     Ambient = SampleSH(normalize(NormalWS));
 #endif
+}
+
+// ============================================================================
+// BAYER DITHER
+//
+// Ordered-dither threshold in [0, 1) per pixel. Feed it a Screen Position node
+// in Pixel mode. Float math only, so it compiles for the Unlit pass's target 2.0.
+// ============================================================================
+
+float Bayer2(float2 p)
+{
+    p = floor(p);
+    return frac(p.x * 0.5 + p.y * p.y * 0.75);
+}
+
+float Bayer4(float2 p) { return Bayer2(p * 0.5) * 0.25 + Bayer2(p); }
+float Bayer8(float2 p) { return Bayer4(p * 0.5) * 0.25 + Bayer2(p); }
+
+void BayerDither_float(float2 PixelPosition, out float Noise)
+{
+    Noise = Bayer4(PixelPosition) + 0.5 / 16.0;
+}
+
+void BayerDither8_float(float2 PixelPosition, out float Noise)
+{
+    Noise = Bayer8(PixelPosition) + 0.5 / 64.0;
+}
+
+
+// ============================================================================
+// SHADE
+//
+// Lit must be direct light only (DiffuseLightAccumulation), without ambient added.
+//
+// Noise:       per-pixel threshold in [0, 1) (Bayer, blue noise texture, ...).
+// DitherWidth: how much of each band, around its edges, is dithered.
+//              0 = hard band edges, 1 = the whole band is a dithered gradient.
+// ============================================================================
+
+void ShadeDithered_float(float3 Albedo, float3 Lit, float3 ShadowColor, float Steps, float Noise, float DitherWidth, out float3 Color)
+{
+    float  lum  = dot(Lit, float3(0.2126, 0.7152, 0.0722));
+    float  x    = lum * Steps + (Noise - 0.5) * DitherWidth;   // jitter the band threshold per pixel
+    float  band = clamp(floor(x), 0.0, Steps) / Steps;         // 0 = in shadow, 1 = fully lit
+    float3 lit  = Lit * (band / max(min(lum, 1.0), 1e-4));     // banded, keeps the light's hue
+    Color = Albedo * (ShadowColor + lit);
+}
+
+void Shade_float(float3 Albedo, float3 Lit, float3 ShadowColor, float Steps, out float3 Color)
+{
+    ShadeDithered_float(Albedo, Lit, ShadowColor, Steps, 0.5, 0.0, Color);
 }
 
 #endif
