@@ -3255,13 +3255,12 @@ MonoBehaviour:
   aAllowedMonster:
   - {fileID: 11400000, guid: d9a249a72a11e7f478ed1a51f5d123fd, type: 2}
   m_nCap: 30
-  m_nGroupSize: 4
-  m_nMaxGroupSize: 10
-  m_fGroupGrowthInterval: 30
+  m_nWaveSize: 4
+  m_nMaxWaveSize: 10
+  m_fWaveGrowthInterval: 30
   m_fCooldown: 5
-  m_fFirstGroupDelay: 1.5
-  m_fRadius: 20
-  m_fGroupSpread: 3
+  m_fFirstWaveDelay: 1.5
+  m_vSpawnArea: {x: 46, y: 46}
   m_fMinDistanceToTarget: 12
 --- !u!1 &330585543
 GameObject:
@@ -3419,6 +3418,12 @@ MonoBehaviour:
   kitchenCameraPosition: {fileID: 436276947}
   customersCameraPosition: {fileID: 1173216526}
   movementSpeed: 30
+  Curve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   toCustomersButton: {fileID: 1555703800}
   toKitchenButton: {fileID: 624903371}
 --- !u!114 &330585549
@@ -19874,6 +19879,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   choice1: {fileID: 758260553}
   choice2: {fileID: 614701548}
+  tutoral: {fileID: 0}
 --- !u!1 &1402319715
 GameObject:
   m_ObjectHideFlags: 0
@@ -22462,12 +22468,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
+  m_ReferenceResolution: {x: 1080, y: 1920}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -28699,6 +28705,7 @@ MonoBehaviour:
   spawner: {fileID: 326289513}
   Player: {fileID: 2094896938}
   ArenaElevator: {fileID: 1777837104}
+  BarElevator: {fileID: 0}
   PlayerSpawn: {fileID: 1189262344}
   FPSCamera: {fileID: 610886962}
   Brain: {fileID: 330585550}
@@ -28714,14 +28721,18 @@ MonoBehaviour:
   Fader: {fileID: 838835171}
   FaderText: {fileID: 700299755}
   fDescentDuration: 1
+  fAscentDuration: 1
   fDescentDistance: 4
-  fRideDuration: 1.2
+  fRideDownDuration: 1.8
+  fRideUpDuration: 1.2
   fRideHeight: 4
   fFadeDuration: 0.35
   fMessageDuration: 1.2
   bLoseHaulOnDeath: 1
   fDamageFlashAlpha: 0.35
   HeadshotColor: {r: 1, g: 0.2, b: 0.2, a: 1}
+  Music: {fileID: 0}
+  fMusicFadeDuration: 1
 --- !u!43 &2055476776
 Mesh:
   m_ObjectHideFlags: 0
@@ -28922,11 +28933,12 @@ MonoBehaviour:
   CameraRoot: {fileID: 764894798}
   Gun: {fileID: 1402319716}
   ImpulseSource: {fileID: 2094896939}
+  FPSCamera: {fileID: 0}
+  MuzzleFlash: {fileID: 0}
   fWalkSpeed: 7
   fSprintSpeed: 10
   fGroundAcceleration: 60
   fAirAcceleration: 15
-  fJumpHeight: 1.2
   fGravity: -25
   fMouseSensitivity: 0.12
   fStickSensitivity: 180
@@ -28938,6 +28950,84 @@ MonoBehaviour:
   HitMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  Zoom:
+    fMagnification: 1.8
+    fDuration: 0.25
+    Curve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 6.9382477
+        outSlope: 6.9382477
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.05
+        value: 0.29317954
+        inSlope: 4.9060817
+        outSlope: 4.9060817
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.15
+        value: 0.6470785
+        inSlope: 2.4530408
+        outSlope: 2.4530408
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.3
+        value: 0.8758553
+        inSlope: 0.86728096
+        outSlope: 0.86728096
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.5
+        value: 0.969697
+        inSlope: 0.21682024
+        outSlope: 0.21682024
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.7
+        value: 0.9931574
+        inSlope: 0.05420506
+        outSlope: 0.05420506
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0.0067756325
+        outSlope: 0.0067756325
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  vGunAimPosition: {x: 0, y: -0.077, z: 0.3}
+  fGunZoomedRecoil: 0.25
+  fGunIdleBob: 0.008
+  fGunIdleBobFrequency: 1.2
+  fGunWalkBob: 0.025
+  fGunZoomedBob: 0.3
   fInteractRange: 2.5
   fStepLength: 2.4
   fLandSoundSpeed: 4
