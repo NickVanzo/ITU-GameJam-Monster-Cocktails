@@ -16,4 +16,5 @@ MonoBehaviour:
     now.
   options:
   - Harvest soul
+  isFinal: 1
   nextDialogue: []

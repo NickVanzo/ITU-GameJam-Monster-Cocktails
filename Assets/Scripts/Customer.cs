@@ -188,6 +188,7 @@ public class Customer : MonoBehaviour
             next = currentDialogue.nextDialogue[choiceIndex];
         }
 
+
         if (next != null)
         {
             currentDialogue = next;
@@ -196,13 +197,17 @@ public class Customer : MonoBehaviour
         else
         {
             DialogueChoiceUI.Instance.Hide();
+            if (currentDialogue.isFinal)
+            {
+                Sfx.Play(Sfx.Sounds.SoulHarvest, transform.position);
+            }
             StartCoroutine(EndDialogueAfterDelay());
         }
     }
 
     private IEnumerator EndDialogueAfterDelay()
     {
-        Sfx.Play(Sfx.Sounds.SoulHarvest, transform.position);
+        
 
         yield return new WaitForSeconds(dialogueEndDelaySeconds);
     

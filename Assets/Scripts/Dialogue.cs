@@ -5,6 +5,7 @@ public class Dialogue : ScriptableObject
 {
     public string text;
     public string[] options;
+    public bool isFinal;
 
     [Tooltip("Dialogue to go to for each option; leave an entry empty to end the conversation on that choice.")]
     public Dialogue[] nextDialogue;
