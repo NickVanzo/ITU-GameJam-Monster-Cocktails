@@ -14,6 +14,7 @@ public class Player : MonoBehaviour
     public Transform kitchenCameraPosition;
     public Transform customersCameraPosition;
     public float movementSpeed = 10.0f;
+    public AnimationCurve Curve;
     
     [SerializeField] private GameObject toCustomersButton;
     [SerializeField] private GameObject toKitchenButton;
@@ -52,12 +53,14 @@ public class Player : MonoBehaviour
 
     private IEnumerator MoveCameraTo(Transform target)
     {
+        float delta = 0;
         while (Vector3.Distance(mainCamera.position, target.position) > 0.01f)
         {
+            delta += movementSpeed * Time.deltaTime;
             mainCamera.position = Vector3.MoveTowards(
                 mainCamera.position, 
                 target.position, 
-                movementSpeed * Time.deltaTime
+                Curve.Evaluate(delta)
             );
 
             yield return null; 

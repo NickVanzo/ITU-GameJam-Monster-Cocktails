@@ -12,3 +12,258 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdd70d68366b4093b84edc6d9491edc4, type: 3}
   m_Name: SoundLibrary
   m_EditorClassIdentifier: 
+  Output: {fileID: 0}
+  GunShot:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 3
+  BulletImpact:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 4
+  HitMarker:
+    Clips: []
+    Volume: 0.6
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 2
+  HeadshotMarker:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  PlayerFootstep:
+    Clips: []
+    Volume: 0.5
+    PitchRange: {x: 0.85, y: 1.15}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  PlayerJump:
+    Clips: []
+    Volume: 0.6
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  PlayerLand:
+    Clips: []
+    Volume: 0.7
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  PlayerHurt:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  PlayerDeath:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  PickupCollect:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 2
+  ZombieSpawn:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 40
+    MaxInstances: 3
+  ZombieFootstep:
+    Clips: []
+    Volume: 0.6
+    PitchRange: {x: 0.8, y: 1.1}
+    SpatialBlend: 1
+    MaxDistance: 15
+    MaxInstances: 6
+  ZombieGroan:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.8, y: 1.1}
+    SpatialBlend: 1
+    MaxDistance: 20
+    MaxInstances: 4
+  ZombieAttack:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 3
+  ZombieHurt:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 4
+  ZombieDeath:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 4
+  ZoomIn:
+    Clips:
+    - {fileID: 8300000, guid: d785e88af75377543b66eb6b6ca97361, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 1
+  ZoomOut:
+    Clips:
+    - {fileID: 8300000, guid: d785e88af75377543b66eb6b6ca97361, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.25, y: 0.35}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 1
+  RopePull:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+  RopeTrigger:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+  ElevatorStart:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  ElevatorMotor:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 1, y: 1}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  ElevatorArrive:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  HarvestBanked:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  RoomSwitch:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  IngredientPour:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+  IngredientSplash:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 3
+  OutOfStock:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  GlassFlush:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+  Serve:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  CustomerArrive:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+  CustomerFootstep:
+    Clips: []
+    Volume: 0.5
+    PitchRange: {x: 0.85, y: 1.15}
+    SpatialBlend: 1
+    MaxDistance: 20
+    MaxInstances: 0
+  CustomerSpeak:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 1
+  CustomerHappy:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+  CustomerAngry:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+  UIClick:
+    Clips: []
+    Volume: 0.7
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0

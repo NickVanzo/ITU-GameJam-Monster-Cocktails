@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Zombie
   m_EditorClassIdentifier: 
   sName: Zombie
+  Prefab: {fileID: 0}
   fMoveSpeed: 2.2
   nHealth: 2
   nDamage: 1
-  Loot: 0
+  aLoot: 00000000
   nLootCount: 1
   fLootChance: 0.5

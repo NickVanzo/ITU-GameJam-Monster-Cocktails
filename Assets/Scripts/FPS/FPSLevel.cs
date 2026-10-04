@@ -29,9 +29,13 @@ public class FPSLevel : MonoBehaviour
     public TMP_Text FaderText;
 
     [Header("Elevator")]
-    [SerializeField] float fDescentDuration = 1.0f;
+    [Tooltip("Bar camera sinking into the floor on the way down.")]
+    [SerializeField] float fDescentDuration = 1.5f;
+    [Tooltip("Bar camera coming back up after the arena.")]
+    [SerializeField] float fAscentDuration = 1.0f;
     [SerializeField] float fDescentDistance = 4.0f;
-    [SerializeField] float fRideDuration = 1.2f;
+    [SerializeField] float fRideDownDuration = 1.8f;
+    [SerializeField] float fRideUpDuration = 1.2f;
     [SerializeField] float fRideHeight = 4.0f;
     [SerializeField] float fFadeDuration = 0.35f;
     [SerializeField] float fMessageDuration = 1.2f;
@@ -40,6 +44,10 @@ public class FPSLevel : MonoBehaviour
     [SerializeField] bool bLoseHaulOnDeath = true;
     [SerializeField] float fDamageFlashAlpha = 0.35f;
     [SerializeField] Color HeadshotColor = new(1.0f, 0.2f, 0.2f);
+
+    [Header("Music")]
+    public AudioSource Music;
+    [SerializeField] float fMusicFadeDuration = 1.0f;
 
     readonly Dictionary<IngredientType, int> m_Haul = new();
     bool bInEncounter = false;
@@ -53,6 +61,8 @@ public class FPSLevel : MonoBehaviour
     float m_fCrosshairFlash;
     bool bHeadshotFlash;
     AudioSource m_ElevatorLoop;
+    float m_fMusicVolume;
+    Coroutine m_MusicFade;
 
     void Awake()
     {
@@ -66,6 +76,12 @@ public class FPSLevel : MonoBehaviour
         Fader.alpha = 0.0f;
         FaderText.text = "";
         SetFlashAlpha(0.0f);
+
+        if(Music != null)
+        {
+            m_fMusicVolume = Music.volume;
+            Music.Stop();
+        }
     }
 
     void OnEnable()
@@ -135,7 +151,7 @@ public class FPSLevel : MonoBehaviour
         ArenaElevator.position = vTop;
         StartEncounter();
 
-        yield return RideElevator(vTop, m_vElevatorRest, true);
+        yield return RideElevator(vTop, m_vElevatorRest, fRideDownDuration, true);
         StopElevatorSound();
 
         Player.SetCanMove(true);
@@ -158,21 +174,22 @@ public class FPSLevel : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
+        PlayMusic();
         RefreshHud();
     }
 
-    IEnumerator RideElevator(Vector3 vFrom, Vector3 vTo, bool bFadeIn)
+    IEnumerator RideElevator(Vector3 vFrom, Vector3 vTo, float fDuration, bool bFadeIn)
     {
         Vector3 vPlayerOffset = Player.transform.position - ArenaElevator.position;
 
-        for(float fElapsed = 0.0f; fElapsed < fRideDuration; fElapsed += Time.deltaTime)
+        for(float fElapsed = 0.0f; fElapsed < fDuration; fElapsed += Time.deltaTime)
         {
-            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fRideDuration);
+            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDuration);
             ArenaElevator.position = Vector3.Lerp(vFrom, vTo, t);
             Player.Teleport(ArenaElevator.position + vPlayerOffset);
             Fader.alpha = bFadeIn
                 ? 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed)
-                : Mathf.InverseLerp(fRideDuration - fFadeDuration, fRideDuration, fElapsed);
+                : Mathf.InverseLerp(fDuration - fFadeDuration, fDuration, fElapsed);
             yield return null;
         }
 
@@ -188,11 +205,16 @@ public class FPSLevel : MonoBehaviour
         Player.SetCanMove(false);
         PromptText.text = "";
 
+        if(Music != null)
+        {
+            m_MusicFade = StartCoroutine(FadeOutMusic());
+        }
+
         string sMessage;
         if(bExtracted)
         {
             StartElevatorSound();
-            yield return RideElevator(m_vElevatorRest, m_vElevatorRest + Vector3.up * fRideHeight, false);
+            yield return RideElevator(m_vElevatorRest, m_vElevatorRest + Vector3.up * fRideHeight, fRideUpDuration, false);
             StopElevatorSound();
 
             sMessage = BankHaul();
@@ -245,9 +267,9 @@ public class FPSLevel : MonoBehaviour
         cameraTransform.rotation = m_qBarCameraRotation;
         Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
         StartElevatorSound();
-        for(float fElapsed = 0.0f; fElapsed < fDescentDuration; fElapsed += Time.deltaTime)
+        for(float fElapsed = 0.0f; fElapsed < fAscentDuration; fElapsed += Time.deltaTime)
         {
-            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDescentDuration);
+            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fAscentDuration);
             cameraTransform.position = Vector3.Lerp(vBottom, m_vBarCameraPosition, t);
             Fader.alpha = 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed);
             yield return null;
@@ -291,6 +313,39 @@ public class FPSLevel : MonoBehaviour
         Sfx.StopLoop(m_ElevatorLoop);
         m_ElevatorLoop = null;
         Sfx.Play(Sfx.Sounds.ElevatorArrive);
+    }
+
+    void PlayMusic()
+    {
+        if(Music == null)
+        {
+            return;
+        }
+
+        if(m_MusicFade != null)
+        {
+            StopCoroutine(m_MusicFade);
+            m_MusicFade = null;
+        }
+
+        Music.volume = m_fMusicVolume;
+        if(!Music.isPlaying)
+        {
+            Music.Play();
+        }
+    }
+
+    IEnumerator FadeOutMusic()
+    {
+        float fFrom = Music.volume;
+        for(float t = 0.0f; t < 1.0f; t += Time.deltaTime / fMusicFadeDuration)
+        {
+            Music.volume = Mathf.Lerp(fFrom, 0.0f, t);
+            yield return null;
+        }
+
+        Music.Stop();
+        m_MusicFade = null;
     }
 
     IEnumerator Fade(float fFrom, float fTo)

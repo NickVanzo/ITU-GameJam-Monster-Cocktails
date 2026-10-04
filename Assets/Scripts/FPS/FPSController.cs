@@ -14,6 +14,8 @@ public class FPSController : IDamageable
     public Transform CameraRoot;
     public Transform Gun;
     public CinemachineImpulseSource ImpulseSource;
+    public CinemachineCamera FPSCamera;
+    public MuzzleFlash MuzzleFlash;
 
     [Header("Movement")]
     [SerializeField] float fWalkSpeed = 7.0f;
@@ -35,6 +37,16 @@ public class FPSController : IDamageable
     [SerializeField] float fRecoil = 0.8f;
     [SerializeField] LayerMask HitMask = ~0;
 
+    [Header("Zoom")]
+    [SerializeField] CameraZoom Zoom = new();
+
+    [Header("Gun Bob")]
+    [SerializeField] float fGunIdleBob = 0.008f;
+    [SerializeField] float fGunIdleBobFrequency = 1.2f;
+    [SerializeField] float fGunWalkBob = 0.025f;
+    [Tooltip("Bob is multiplied by this while fully zoomed.")]
+    [SerializeField] float fGunZoomedBob = 0.3f;
+
     [Header("Interaction")]
     [SerializeField] float fInteractRange = 2.5f;
 
@@ -50,7 +62,10 @@ public class FPSController : IDamageable
     float m_fPitch;
     float m_fFireTimestamp;
     float m_fGunKick;
+    float m_fGunBobPhase;
+    float m_fGunWalkBlend;
     Vector3 m_vGunRestPosition;
+    float m_fBaseFieldOfView;
 
     InputAction MoveAction;
     InputAction LookAction;
@@ -58,6 +73,7 @@ public class FPSController : IDamageable
     InputAction JumpAction;
     InputAction SprintAction;
     InputAction InteractAction;
+    InputAction ZoomAction;
 
     public bool CanMove => bCanMove;
     public ElevatorRope LookedAtRope { get; private set; }
@@ -80,6 +96,7 @@ public class FPSController : IDamageable
         JumpAction = actions.FindAction("Player/Jump", true);
         SprintAction = actions.FindAction("Player/Sprint", true);
         InteractAction = actions.FindAction("Player/Interact", true);
+        ZoomAction = actions.FindAction("Player/Zoom", true);
     }
 
     void OnEnable()
@@ -91,6 +108,7 @@ public class FPSController : IDamageable
         JumpAction.Enable();
         SprintAction.Enable();
         InteractAction.Enable();
+        ZoomAction.Enable();
     }
 
     void OnDisable()
@@ -110,6 +128,7 @@ public class FPSController : IDamageable
         bWasGrounded = true;
         m_fStepDistance = 0.0f;
         CameraRoot.localRotation = Quaternion.identity;
+        ResetZoom();
         ResetHealth();
         Physics.SyncTransforms();
     }
@@ -128,6 +147,8 @@ public class FPSController : IDamageable
 
     public void Update()
     {
+        UpdateZoom(IsAlive() && bCanMove && ZoomAction.IsPressed());
+
         if(!IsAlive() || !bCanMove)
         {
             LookedAtRope = null;
@@ -146,7 +167,7 @@ public class FPSController : IDamageable
     {
         Vector2 vLook = LookAction.ReadValue<Vector2>();
         bool bPointer = LookAction.activeControl != null && LookAction.activeControl.device is Pointer;
-        vLook *= bPointer ? fMouseSensitivity : fStickSensitivity * Time.deltaTime;
+        vLook *= (bPointer ? fMouseSensitivity : fStickSensitivity * Time.deltaTime) * Zoom.Scale;
 
         transform.Rotate(0.0f, vLook.x, 0.0f);
         m_fPitch = Mathf.Clamp(m_fPitch - vLook.y, -fMaxPitch, fMaxPitch);
@@ -258,6 +279,11 @@ public class FPSController : IDamageable
             ImpulseSource.GenerateImpulseWithVelocity(new Vector3(0.0f, 0.0f, -0.06f));
         }
 
+        if(MuzzleFlash != null)
+        {
+            MuzzleFlash.Play();
+        }
+
         if(!Physics.Raycast(CameraRoot.position, CameraRoot.forward, out RaycastHit hit, fRange, HitMask, QueryTriggerInteraction.Ignore))
         {
             return;
@@ -276,6 +302,31 @@ public class FPSController : IDamageable
         OnHitEnemy?.Invoke(bHeadshot);
     }
 
+    void ResetZoom()
+    {
+        if(FPSCamera == null)
+        {
+            return;
+        }
+
+        // Spawn can run before Awake, so grab the unzoomed field of view the first time we need it.
+        if(m_fBaseFieldOfView <= 0.0f)
+        {
+            m_fBaseFieldOfView = FPSCamera.Lens.FieldOfView;
+        }
+
+        Zoom.Reset(m_fBaseFieldOfView);
+        FPSCamera.Lens.FieldOfView = m_fBaseFieldOfView;
+    }
+
+    void UpdateZoom(bool bWantZoom)
+    {
+        if(FPSCamera != null)
+        {
+            FPSCamera.Lens.FieldOfView = Zoom.Update(bWantZoom, Time.deltaTime);
+        }
+    }
+
     void UpdateGun()
     {
         if(Gun == null)
@@ -284,8 +335,26 @@ public class FPSController : IDamageable
         }
 
         m_fGunKick = Mathf.MoveTowards(m_fGunKick, 0.0f, Time.deltaTime * 10.0f);
-        Gun.localPosition = m_vGunRestPosition + new Vector3(0.0f, 0.0f, -0.08f * m_fGunKick);
+        Gun.localPosition = m_vGunRestPosition + ComputeGunBob() + new Vector3(0.0f, 0.0f, -0.08f * m_fGunKick);
         Gun.localRotation = Quaternion.Euler(-65.0f * m_fGunKick, 0.0f, 0.0f);
+    }
+
+    // Slow breathing bob when standing still, one dip per footstep plus a little sway when walking.
+    Vector3 ComputeGunBob()
+    {
+        Vector3 vHorizontal = Controller.velocity;
+        vHorizontal.y = 0.0f;
+        float fSpeed = vHorizontal.magnitude;
+
+        float fWalk = Controller.isGrounded ? Mathf.Clamp01(fSpeed / fWalkSpeed) : 0.0f;
+        m_fGunWalkBlend = Mathf.MoveTowards(m_fGunWalkBlend, fWalk, Time.deltaTime * 4.0f);
+        m_fGunBobPhase += fSpeed / fStepLength * Mathf.PI * Time.deltaTime;
+
+        Vector3 vWalk = new(Mathf.Cos(m_fGunBobPhase) * 0.5f, -Mathf.Abs(Mathf.Sin(m_fGunBobPhase)), 0.0f);
+        float fIdle = Mathf.Sin(Time.time * fGunIdleBobFrequency * 2.0f * Mathf.PI);
+
+        Vector3 vBob = vWalk * (fGunWalkBob * m_fGunWalkBlend) + Vector3.up * (fIdle * fGunIdleBob * (1.0f - m_fGunWalkBlend));
+        return vBob * Mathf.Lerp(1.0f, fGunZoomedBob, Zoom.Amount);
     }
 
     protected override void OnDamaged()

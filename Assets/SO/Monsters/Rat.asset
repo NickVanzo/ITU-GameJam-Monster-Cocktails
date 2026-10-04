@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7f34166955326c4facff054c84fbe31, type: 3}
-  m_Name: Zombie Nun
-  m_EditorClassIdentifier: 
-  sName: Zombie Nun
-  Prefab: {fileID: 9214060898171346662, guid: dbffee163b5f4ebabc9b4d2fad46a1b8, type: 3}
-  fMoveSpeed: 3.5
-  nHealth: 3
+  m_Name: Rat
+  m_EditorClassIdentifier:
+  sName: Rat
+  Prefab: {fileID: 2669967201323737361, guid: 44f25cbe7da34bbe8e961a1add9b6e82, type: 3}
+  fMoveSpeed: 4.5
+  nHealth: 1
   nDamage: 1
-  aLoot: 0100000004000000
+  aLoot: 05000000
   nLootCount: 1
   fLootChance: 0.5

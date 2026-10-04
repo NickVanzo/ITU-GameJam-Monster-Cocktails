@@ -20,12 +20,16 @@ public class SoundLibrary : ScriptableObject
     public Sound PickupCollect = new() { SpatialBlend = 0.0f, MaxInstances = 2 };
 
     [Header("FPS - Zombies")]
-    public Sound ZombieSpawn = new() { MaxDistance = 40.0f };
+    public Sound ZombieSpawn = new() { MaxDistance = 40.0f, MaxInstances = 3 };
     public Sound ZombieFootstep = new() { Volume = 0.6f, MaxDistance = 15.0f, MaxInstances = 6, PitchRange = new(0.8f, 1.1f) };
     public Sound ZombieGroan = new() { MaxDistance = 20.0f, MaxInstances = 4, PitchRange = new(0.8f, 1.1f) };
     public Sound ZombieAttack = new() { MaxInstances = 3 };
     public Sound ZombieHurt = new() { MaxInstances = 4 };
     public Sound ZombieDeath = new() { MaxInstances = 4 };
+
+    [Header("Camera")]
+    public Sound ZoomIn = new() { SpatialBlend = 0.0f, MaxInstances = 1 };
+    public Sound ZoomOut = new() { SpatialBlend = 0.0f, MaxInstances = 1 };
 
     [Header("Elevator")]
     public Sound RopePull = new();
