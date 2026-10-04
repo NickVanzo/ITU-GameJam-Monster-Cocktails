@@ -16,6 +16,5 @@ MonoBehaviour:
     I lost.
   options:
   - Harvest soul.
-  - 
   isFinal: 1
   nextDialogue: []

@@ -9,14 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 30b1cb698085b457686f3d779c2bac34, type: 3}
   m_Name: G1
-  m_EditorClassIdentifier: Assembly-CSharp::Dialogue
+  m_EditorClassIdentifier: 
   text: So good! My compliments
   options:
   - Thank you. How's your evening?
   - As long as you pay the drink is good
-  optionTemperatureDeltas: 0100000000000000
   nextDialogue:
   - {fileID: 11400000, guid: 96617a9f3f255481ba4d9516b87aad32, type: 2}
   - {fileID: 0}

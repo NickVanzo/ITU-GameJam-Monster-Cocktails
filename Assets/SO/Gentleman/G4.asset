@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 30b1cb698085b457686f3d779c2bac34, type: 3}
   m_Name: G4
-  m_EditorClassIdentifier: Assembly-CSharp::Dialogue
+  m_EditorClassIdentifier: 
   text: I couldn't get that bitch of my wife get my money. She's food for the fishes
     now.
   options:
