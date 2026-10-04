@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: G4
   m_EditorClassIdentifier: Assembly-CSharp::Dialogue
-  text: What do you want me to say? I couldn't get that bitch get my money. She's
-    food for the fishes now.
+  text: I couldn't get that bitch of my wife get my money. She's food for the fishes
+    now.
   options:
   - Harvest soul
   nextDialogue: []

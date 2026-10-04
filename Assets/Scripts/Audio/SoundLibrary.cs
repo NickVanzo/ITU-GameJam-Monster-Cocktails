@@ -52,4 +52,5 @@ public class SoundLibrary : ScriptableObject
     public Sound CustomerHappy = new();
     public Sound CustomerAngry = new();
     public Sound UIClick = new() { SpatialBlend = 0.0f, Volume = 0.7f };
+    public Sound SoulHarvest  = new() { SpatialBlend = 0.0f, Volume = 0.7f };
 }

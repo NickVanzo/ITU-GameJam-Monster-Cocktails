@@ -9,6 +9,7 @@ TagManager:
   - ServeButton
   - Head
   - Water
+  - Tutorial
   layers:
   - Default
   - TransparentFX
