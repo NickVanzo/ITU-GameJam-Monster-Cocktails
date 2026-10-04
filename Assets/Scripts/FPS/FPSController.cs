@@ -22,7 +22,6 @@ public class FPSController : IDamageable
     [SerializeField] float fSprintSpeed = 10.0f;
     [SerializeField] float fGroundAcceleration = 60.0f;
     [SerializeField] float fAirAcceleration = 15.0f;
-    [SerializeField] float fJumpHeight = 1.2f;
     [SerializeField] float fGravity = -25.0f;
 
     [Header("Look")]
@@ -75,7 +74,6 @@ public class FPSController : IDamageable
     InputAction MoveAction;
     InputAction LookAction;
     InputAction AttackAction;
-    InputAction JumpAction;
     InputAction SprintAction;
     InputAction InteractAction;
     InputAction ZoomAction;
@@ -104,7 +102,6 @@ public class FPSController : IDamageable
         MoveAction = actions.FindAction("Player/Move", true);
         LookAction = actions.FindAction("Player/Look", true);
         AttackAction = actions.FindAction("Player/Attack", true);
-        JumpAction = actions.FindAction("Player/Jump", true);
         SprintAction = actions.FindAction("Player/Sprint", true);
         InteractAction = actions.FindAction("Player/Interact", true);
         ZoomAction = actions.FindAction("Player/Zoom", true);
@@ -116,7 +113,6 @@ public class FPSController : IDamageable
         MoveAction.Enable();
         LookAction.Enable();
         AttackAction.Enable();
-        JumpAction.Enable();
         SprintAction.Enable();
         InteractAction.Enable();
         ZoomAction.Enable();
@@ -203,20 +199,9 @@ public class FPSController : IDamageable
             m_vVelocity.y = -2.0f;
         }
 
-        if(bGrounded && JumpAction.WasPressedThisFrame())
-        {
-            m_vVelocity.y = Mathf.Sqrt(fJumpHeight * -2.0f * fGravity);
-            Sfx.Play(Sfx.Sounds.PlayerJump);
-        }
-
         m_vVelocity.y += fGravity * Time.deltaTime;
         float fFallSpeed = -m_vVelocity.y;
-        CollisionFlags flags = Controller.Move(m_vVelocity * Time.deltaTime);
-
-        if((flags & CollisionFlags.Above) != 0 && m_vVelocity.y > 0.0f)
-        {
-            m_vVelocity.y = 0.0f;
-        }
+        Controller.Move(m_vVelocity * Time.deltaTime);
 
         UpdateMovementSounds(fFallSpeed);
     }
@@ -360,7 +345,6 @@ public class FPSController : IDamageable
         }
     }
 
-    // Slow breathing bob when standing still, one dip per footstep plus a little sway when walking.
     Vector3 ComputeGunBob()
     {
         Vector3 vHorizontal = Controller.velocity;

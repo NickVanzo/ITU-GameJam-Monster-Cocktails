@@ -62,7 +62,6 @@ void LightAccumulation_float(
 
     half4 shadowMask = half4(1.0, 1.0, 1.0, 1.0);
 
-
     // ========================================================================
     // MAIN LIGHT
     // ========================================================================
@@ -87,7 +86,6 @@ void LightAccumulation_float(
 
     uint pixelLightCount = GetAdditionalLightsCount();
 
-
     // ========================================================================
     // FORWARD+ / CLUSTERED ADDITIONAL DIRECTIONAL LIGHTS
     // ========================================================================
@@ -109,7 +107,6 @@ void LightAccumulation_float(
 
 #endif
 
-
     // ========================================================================
     // INPUT DATA REQUIRED BY LIGHT_LOOP_BEGIN
     //
@@ -123,16 +120,9 @@ void LightAccumulation_float(
     // ========================================================================
 
     InputData inputData = (InputData)0;
-
     inputData.positionWS = PositionWS;
-
-    float4 screenPos =
-        ComputeScreenPos(
-            TransformWorldToHClip(PositionWS)
-        );
-
-    inputData.normalizedScreenSpaceUV =
-        screenPos.xy / screenPos.w;
+    float4 screenPos = ComputeScreenPos( TransformWorldToHClip(PositionWS) );
+    inputData.normalizedScreenSpaceUV = screenPos.xy / screenPos.w;
 
 
     // ========================================================================
@@ -196,49 +186,15 @@ void DiffuseLightAccumulation_float(
 
     NormalWS = normalize(NormalWS);
 
-    half4 shadowMask =
-        half4(1.0, 1.0, 1.0, 1.0);
+    half4 shadowMask = half4(1.0, 1.0, 1.0, 1.0);
+    float4 shadowCoord = TransformWorldToShadowCoord(PositionWS);
 
+    Light mainLight = GetMainLight( shadowCoord, PositionWS, shadowMask);
 
-    // ========================================================================
-    // MAIN LIGHT
-    // ========================================================================
+    float mainNdotL = saturate(dot( NormalWS, mainLight.direction));
+    Lighting += mainLight.color * mainNdotL * mainLight.distanceAttenuation * mainLight.shadowAttenuation;
 
-    float4 shadowCoord =
-        TransformWorldToShadowCoord(PositionWS);
-
-    Light mainLight = GetMainLight(
-        shadowCoord,
-        PositionWS,
-        shadowMask
-    );
-
-    float mainNdotL =
-        saturate(
-            dot(
-                NormalWS,
-                mainLight.direction
-            )
-        );
-
-    Lighting +=
-        mainLight.color *
-        mainNdotL *
-        mainLight.distanceAttenuation *
-        mainLight.shadowAttenuation;
-
-
-    // ========================================================================
-    // ADDITIONAL LIGHT SETUP
-    // ========================================================================
-
-    uint pixelLightCount =
-        GetAdditionalLightsCount();
-
-
-    // ========================================================================
-    // FORWARD+ / CLUSTERED ADDITIONAL DIRECTIONAL LIGHTS
-    // ========================================================================
+    uint pixelLightCount = GetAdditionalLightsCount();
 
 #if USE_CLUSTER_LIGHT_LOOP
 
@@ -251,85 +207,27 @@ void DiffuseLightAccumulation_float(
     {
         CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
 
-        Light light = GetAdditionalLight(
-            lightIndex,
-            PositionWS,
-            shadowMask
-        );
-
-        float NdotL =
-            saturate(
-                dot(
-                    NormalWS,
-                    light.direction
-                )
-            );
-
-        Lighting +=
-            light.color *
-            NdotL *
-            light.distanceAttenuation *
-            light.shadowAttenuation;
+        Light light = GetAdditionalLight( lightIndex, PositionWS, shadowMask );
+        float NdotL = saturate(dot(NormalWS, light.direction));
+        Lighting += light.color * NdotL * light.distanceAttenuation * light.shadowAttenuation;
     }
 
 #endif
 
-
-    // ========================================================================
-    // INPUT DATA FOR FORWARD+ CLUSTER LOOKUP
-    // ========================================================================
+    float4 screenPos = ComputeScreenPos( TransformWorldToHClip(PositionWS));
 
     InputData inputData = (InputData)0;
-
     inputData.positionWS = PositionWS;
-
-    float4 screenPos =
-        ComputeScreenPos(
-            TransformWorldToHClip(PositionWS)
-        );
-
-    inputData.normalizedScreenSpaceUV =
-        screenPos.xy / screenPos.w;
-
-
-    // ========================================================================
-    // POINT / SPOT / ADDITIONAL LIGHTS
-    // ========================================================================
+    inputData.normalizedScreenSpaceUV = screenPos.xy / screenPos.w;
 
     LIGHT_LOOP_BEGIN(pixelLightCount)
-
-        Light light = GetAdditionalLight(
-            lightIndex,
-            PositionWS,
-            shadowMask
-        );
-
-        float NdotL =
-            saturate(
-                dot(
-                    NormalWS,
-                    light.direction
-                )
-            );
-
-        Lighting +=
-            light.color *
-            NdotL *
-            light.distanceAttenuation *
-            light.shadowAttenuation;
-
+        Light light = GetAdditionalLight(lightIndex, PositionWS, shadowMask);
+        float NdotL = saturate(dot( NormalWS, light.direction ));
+        Lighting += light.color * NdotL * light.distanceAttenuation * light.shadowAttenuation;
     LIGHT_LOOP_END
 
 #endif
 }
-
-
-// ============================================================================
-// ADDITIONAL LIGHTS ONLY - RAW
-//
-// Useful for debugging whether point/spot lights are actually reaching
-// the Shader Graph.
-// ============================================================================
 
 void AdditionalLightAccumulation_float(
     float3 PositionWS,
@@ -344,10 +242,6 @@ void AdditionalLightAccumulation_float(
     half4 shadowMask = half4(1.0, 1.0, 1.0, 1.0);
     uint pixelLightCount = GetAdditionalLightsCount();
 
-    // ========================================================================
-    // FORWARD+ ADDITIONAL DIRECTIONALS
-    // ========================================================================
-
 #if USE_CLUSTER_LIGHT_LOOP
 
     UNITY_LOOP
@@ -358,27 +252,17 @@ void AdditionalLightAccumulation_float(
     )
     {
         CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
-
         Light light = GetAdditionalLight( lightIndex, PositionWS, shadowMask );
-
         Lighting += light.color * light.distanceAttenuation * light.shadowAttenuation;
     }
 
 #endif
-
-    // ========================================================================
-    // CLUSTER LOOKUP DATA
-    // ========================================================================
 
     InputData inputData = (InputData)0;
     inputData.positionWS = PositionWS;
 
     float4 screenPos = ComputeScreenPos( TransformWorldToHClip(PositionWS));
     inputData.normalizedScreenSpaceUV = screenPos.xy / screenPos.w;
-
-    // ========================================================================
-    // POINT / SPOT LIGHTS
-    // ========================================================================
 
     LIGHT_LOOP_BEGIN(pixelLightCount)
         Light light = GetAdditionalLight( lightIndex, PositionWS, shadowMask);
@@ -388,11 +272,6 @@ void AdditionalLightAccumulation_float(
 #endif
 }
 
-
-// ============================================================================
-// ADDITIONAL LIGHTS ONLY - DIFFUSE
-// ============================================================================
-
 void AdditionalDiffuseLightAccumulation_float(
     float3 PositionWS,
     float3 NormalWS,
@@ -400,25 +279,14 @@ void AdditionalDiffuseLightAccumulation_float(
 )
 {
 #ifdef SHADERGRAPH_PREVIEW
-
     Lighting = float3(0.25, 0.25, 0.25);
-
 #else
-
     Lighting = float3(0.0, 0.0, 0.0);
-
     NormalWS = normalize(NormalWS);
 
-    half4 shadowMask =
-        half4(1.0, 1.0, 1.0, 1.0);
+    half4 shadowMask =  half4(1.0, 1.0, 1.0, 1.0);
 
-    uint pixelLightCount =
-        GetAdditionalLightsCount();
-
-
-    // ========================================================================
-    // FORWARD+ ADDITIONAL DIRECTIONALS
-    // ========================================================================
+    uint pixelLightCount = GetAdditionalLightsCount();
 
 #if USE_CLUSTER_LIGHT_LOOP
 
@@ -438,20 +306,11 @@ void AdditionalDiffuseLightAccumulation_float(
 
 #endif
 
-
-    // ========================================================================
-    // CLUSTER LOOKUP DATA
-    // ========================================================================
-
     InputData inputData = (InputData)0;
     inputData.positionWS = PositionWS;
 
     float4 screenPos = ComputeScreenPos(TransformWorldToHClip(PositionWS));
     inputData.normalizedScreenSpaceUV = screenPos.xy / screenPos.w;
-
-    // ========================================================================
-    // POINT / SPOT LIGHTS
-    // ========================================================================
 
     LIGHT_LOOP_BEGIN(pixelLightCount)
 
@@ -476,13 +335,6 @@ void AmbientLight_float(
 #endif
 }
 
-// ============================================================================
-// BAYER DITHER
-//
-// Ordered-dither threshold in [0, 1) per pixel. Feed it a Screen Position node
-// in Pixel mode. Float math only, so it compiles for the Unlit pass's target 2.0.
-// ============================================================================
-
 float Bayer2(float2 p)
 {
     p = floor(p);
@@ -502,29 +354,18 @@ void BayerDither8_float(float2 PixelPosition, out float Noise)
     Noise = Bayer8(PixelPosition) + 0.5 / 64.0;
 }
 
-
-// ============================================================================
-// SHADE
-//
-// Lit must be direct light only (DiffuseLightAccumulation), without ambient added.
-//
-// Noise:       per-pixel threshold in [0, 1) (Bayer, blue noise texture, ...).
-// DitherWidth: how much of each band, around its edges, is dithered.
-//              0 = hard band edges, 1 = the whole band is a dithered gradient.
-// ============================================================================
-
-void ShadeDithered_float(float3 Albedo, float3 Lit, float3 ShadowColor, float Steps, float Noise, float DitherWidth, out float3 Color)
+void ShadeDithered_float(float3 Albedo, float3 Lit, float3 ShadowColor, float Steps, float3 Emissiveness, float Noise, float DitherWidth, out float3 Color)
 {
     float  lum  = dot(Lit, float3(0.2126, 0.7152, 0.0722));
     float  x    = lum * Steps + (Noise - 0.5) * DitherWidth;   // jitter the band threshold per pixel
     float  band = clamp(floor(x), 0.0, Steps) / Steps;         // 0 = in shadow, 1 = fully lit
     float3 lit  = Lit * (band / max(min(lum, 1.0), 1e-4));     // banded, keeps the light's hue
-    Color = Albedo * (ShadowColor + lit);
+    Color = Albedo * (ShadowColor + lit) + Emissiveness;
 }
 
-void Shade_float(float3 Albedo, float3 Lit, float3 ShadowColor, float Steps, out float3 Color)
+void Shade_float(float3 Albedo, float3 Lit, float3 ShadowColor, float Steps, float3 Emissiveness, out float3 Color)
 {
-    ShadeDithered_float(Albedo, Lit, ShadowColor, Steps, 0.5, 0.0, Color);
+    ShadeDithered_float(Albedo, Lit, ShadowColor, Steps, Emissiveness, 0.5, 0.0, Color);
 }
 
 #endif

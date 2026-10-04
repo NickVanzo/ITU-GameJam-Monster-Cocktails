@@ -182,7 +182,7 @@ SpriteRenderer:
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.16, y: 0.16}
+  m_Size: {x: 0.224, y: 0.224}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -260,6 +260,7 @@ MonoBehaviour:
   dialogueCanvas: {fileID: 6366502705328986319}
   dialogueText: {fileID: 3712062880630475240}
   startingDialogue: {fileID: 11400000, guid: 6d5283254ae1f4700a890019e4d68b6d, type: 2}
+  footstepLength: 0.8
 --- !u!1 &5489048530437813572
 GameObject:
   m_ObjectHideFlags: 0

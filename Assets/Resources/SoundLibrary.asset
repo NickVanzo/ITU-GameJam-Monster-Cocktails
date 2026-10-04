@@ -54,14 +54,6 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
-  PlayerJump:
-    Clips: []
-    Volume: 0.6
-    PitchRange: {x: 0.95, y: 1.05}
-    SpatialBlend: 0
-    MaxDistance: 25
-    MaxInstances: 0
-    RestartWhenFull: 0
   PlayerLand:
     Clips: []
     Volume: 0.7
@@ -307,4 +299,13 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
+  GunSelect:
+    Clips:
+    - {fileID: 8300000, guid: 5ac936edcf4004d41a2e8bebfc2c2610, type: 3}
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 1
     RestartWhenFull: 0
