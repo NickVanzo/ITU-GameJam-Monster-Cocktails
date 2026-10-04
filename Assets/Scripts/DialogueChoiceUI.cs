@@ -26,6 +26,8 @@ public class DialogueChoiceUI : MonoBehaviour
     {
         choice1Button.onClick.RemoveAllListeners();
         choice2Button.onClick.RemoveAllListeners();
+        choice1Button.onClick.AddListener(PlayClickSound);
+        choice2Button.onClick.AddListener(PlayClickSound);
 
         bool hasFirst = optionTexts.Length > 0;
         bool hasSecond = optionTexts.Length > 1;
@@ -50,5 +52,10 @@ public class DialogueChoiceUI : MonoBehaviour
     {
         choice1.SetActive(false);
         choice2.SetActive(false);
+    }
+
+    private static void PlayClickSound()
+    {
+        Sfx.Play(Sfx.Sounds.UIClick);
     }
 }

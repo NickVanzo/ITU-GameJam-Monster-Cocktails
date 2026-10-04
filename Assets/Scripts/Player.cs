@@ -39,6 +39,7 @@ public class Player : MonoBehaviour
     {
         currentRoom = (currentRoom == Rooms.MainRoom) ? Rooms.Kitchen : Rooms.MainRoom;
         Transform target = (currentRoom == Rooms.Kitchen) ? kitchenCameraPosition : customersCameraPosition;
+        Sfx.Play(Sfx.Sounds.RoomSwitch);
 
         // Stop any ongoing move coroutine before starting a new one
         if (transitionCoroutine != null)

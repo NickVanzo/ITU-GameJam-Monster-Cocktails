@@ -31,13 +31,19 @@ public class PlayerInteraction : MonoBehaviour
                 Debug.Log($"{ingredient.type.ToString().ToUpper()} consumed");
                 kitchenGlass.AddIngredient(ingredient.type);
             }
+            else
+            {
+                Sfx.Play(Sfx.Sounds.OutOfStock);
+            }
         }
         else if (target.CompareTag(FlushButtonTag))
         {
+            Sfx.Play(Sfx.Sounds.GlassFlush, kitchenGlass.transform.position);
             kitchenGlass.Flush();
         }
         else if (target.CompareTag(ServeButtonTag))
         {
+            Sfx.Play(Sfx.Sounds.Serve);
             CustomerManager.Instance.ActiveCustomer?.ReceiveDrink(kitchenGlass.GetIngredientTypes());
             kitchenGlass.Flush();
         }

@@ -65,6 +65,11 @@ public class Spawner : MonoBehaviour
         int nCount = Mathf.Min(m_nGroupSize + nGrowth, m_nMaxGroupSize, m_nCap - aMonsters.Count);
         Vector3 vCenter = PickGroupCenter();
 
+        if(nCount > 0)
+        {
+            Sfx.Play(Sfx.Sounds.ZombieSpawn, vCenter);
+        }
+
         for(int i = 0; i < nCount; ++i)
         {
             Vector2 vOffset = Random.insideUnitCircle * m_fGroupSpread;

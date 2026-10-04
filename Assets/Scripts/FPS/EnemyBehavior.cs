@@ -15,8 +15,14 @@ public class EnemyBehavior : IDamageable
     [SerializeField] float fTurnSpeed = 10.0f;
     [SerializeField] float fSpeedVariance = 0.15f;
 
+    [Header("Audio")]
+    [SerializeField] float fStepLength = 0.9f;
+    [SerializeField] Vector2 vGroanInterval = new(4.0f, 10.0f);
+
     Spawner m_Spawner;
     float m_fAttackTimestamp;
+    float m_fStepDistance;
+    float m_fGroanTimestamp;
     float m_fHitFlash;
     float m_fSpeedScale = 1.0f;
     Vector3 m_vBaseScale;
@@ -53,6 +59,10 @@ public class EnemyBehavior : IDamageable
         m_fAttackTimestamp = Time.time + fAttackCooldown;
         m_fSpeedScale = Random.Range(1.0f - fSpeedVariance, 1.0f + fSpeedVariance);
 
+        // Random offsets so a group doesn't step and groan in sync.
+        m_fStepDistance = Random.Range(0.0f, fStepLength);
+        m_fGroanTimestamp = Time.time + Random.Range(0.0f, vGroanInterval.y);
+
         if(Monster != null)
         {
             ResetHealth(Monster.nHealth);
@@ -78,17 +88,37 @@ public class EnemyBehavior : IDamageable
             vMove += vDirection;
         }
 
-        transform.position += Vector3.ClampMagnitude(vMove, 1.0f) * MoveSpeed * Time.deltaTime;
+        Vector3 vStep = Vector3.ClampMagnitude(vMove, 1.0f) * MoveSpeed * Time.deltaTime;
+        transform.position += vStep;
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(vDirection), fTurnSpeed * Time.deltaTime);
 
         if(fDistance <= fAttackRange && target.CanMove && Time.time >= m_fAttackTimestamp)
         {
             m_fAttackTimestamp = Time.time + fAttackCooldown;
+            Sfx.Play(Sfx.Sounds.ZombieAttack, transform.position);
             target.TakeDamage(Damage);
         }
 
         m_fHitFlash = Mathf.MoveTowards(m_fHitFlash, 0.0f, Time.deltaTime * 8.0f);
         transform.localScale = m_vBaseScale * (1.0f + 0.2f * m_fHitFlash);
+
+        UpdateSounds(vStep.magnitude);
+    }
+
+    void UpdateSounds(float fMoved)
+    {
+        m_fStepDistance += fMoved;
+        if(m_fStepDistance >= fStepLength)
+        {
+            m_fStepDistance -= fStepLength;
+            Sfx.Play(Sfx.Sounds.ZombieFootstep, transform.position);
+        }
+
+        if(Time.time >= m_fGroanTimestamp)
+        {
+            m_fGroanTimestamp = Time.time + Random.Range(vGroanInterval.x, vGroanInterval.y);
+            Sfx.Play(Sfx.Sounds.ZombieGroan, transform.position);
+        }
     }
 
     Vector3 ComputeSeparation()
@@ -118,10 +148,17 @@ public class EnemyBehavior : IDamageable
     protected override void OnDamaged()
     {
         m_fHitFlash = 1.0f;
+
+        if(IsAlive())
+        {
+            Sfx.Play(Sfx.Sounds.ZombieHurt, transform.position);
+        }
     }
 
     protected override void OnDeath()
     {
+        Sfx.Play(Sfx.Sounds.ZombieDeath, transform.position);
+
         if(m_Spawner != null)
         {
             m_Spawner.NotifyMonsterKilled(this);

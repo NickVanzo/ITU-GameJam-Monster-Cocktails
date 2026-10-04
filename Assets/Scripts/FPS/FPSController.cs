@@ -38,9 +38,15 @@ public class FPSController : IDamageable
     [Header("Interaction")]
     [SerializeField] float fInteractRange = 2.5f;
 
+    [Header("Audio")]
+    [SerializeField] float fStepLength = 2.4f;
+    [SerializeField] float fLandSoundSpeed = 4.0f;
+
     CharacterController Controller;
     bool bCanMove = false;
+    bool bWasGrounded = true;
     Vector3 m_vVelocity;
+    float m_fStepDistance;
     float m_fPitch;
     float m_fFireTimestamp;
     float m_fGunKick;
@@ -55,6 +61,7 @@ public class FPSController : IDamageable
 
     public bool CanMove => bCanMove;
     public ElevatorRope LookedAtRope { get; private set; }
+    public ElevatorRope HeldRope { get; private set; }
 
     protected override void Awake()
     {
@@ -90,6 +97,7 @@ public class FPSController : IDamageable
     {
         bCanMove = false;
         LookedAtRope = null;
+        HeldRope = null;
         Controller.enabled = false;
     }
 
@@ -99,6 +107,8 @@ public class FPSController : IDamageable
         m_vVelocity = Vector3.zero;
         m_fPitch = 0.0f;
         m_fGunKick = 0.0f;
+        bWasGrounded = true;
+        m_fStepDistance = 0.0f;
         CameraRoot.localRotation = Quaternion.identity;
         ResetHealth();
         Physics.SyncTransforms();
@@ -121,6 +131,7 @@ public class FPSController : IDamageable
         if(!IsAlive() || !bCanMove)
         {
             LookedAtRope = null;
+            HeldRope = null;
             return;
         }
 
@@ -162,14 +173,46 @@ public class FPSController : IDamageable
         if(bGrounded && JumpAction.WasPressedThisFrame())
         {
             m_vVelocity.y = Mathf.Sqrt(fJumpHeight * -2.0f * fGravity);
+            Sfx.Play(Sfx.Sounds.PlayerJump);
         }
 
         m_vVelocity.y += fGravity * Time.deltaTime;
+        float fFallSpeed = -m_vVelocity.y;
         CollisionFlags flags = Controller.Move(m_vVelocity * Time.deltaTime);
 
         if((flags & CollisionFlags.Above) != 0 && m_vVelocity.y > 0.0f)
         {
             m_vVelocity.y = 0.0f;
+        }
+
+        UpdateMovementSounds(fFallSpeed);
+    }
+
+    void UpdateMovementSounds(float fFallSpeed)
+    {
+        bool bGrounded = Controller.isGrounded;
+        if(bGrounded && !bWasGrounded && fFallSpeed > fLandSoundSpeed)
+        {
+            Sfx.Play(Sfx.Sounds.PlayerLand);
+        }
+        bWasGrounded = bGrounded;
+
+        Vector3 vHorizontal = Controller.velocity;
+        vHorizontal.y = 0.0f;
+        float fSpeed = vHorizontal.magnitude;
+
+        if(!bGrounded || fSpeed < 0.5f)
+        {
+            // Standing still: the first step comes half a stride after starting to move.
+            m_fStepDistance = fStepLength * 0.5f;
+            return;
+        }
+
+        m_fStepDistance += fSpeed * Time.deltaTime;
+        if(m_fStepDistance >= fStepLength)
+        {
+            m_fStepDistance -= fStepLength;
+            Sfx.Play(Sfx.Sounds.PlayerFootstep);
         }
     }
 
@@ -182,10 +225,19 @@ public class FPSController : IDamageable
             LookedAtRope = hit.collider.GetComponentInParent<ElevatorRope>();
         }
 
-        // TODO idk mate
-        if(LookedAtRope != null && InteractAction.IsPressed())
+        // Grab the rope by looking at it while [E] is down, then keep pulling until [E] is released, wherever you look.
+        if(!InteractAction.IsPressed())
         {
-            LookedAtRope.Hold();
+            HeldRope = null;
+        }
+        else if(HeldRope == null)
+        {
+            HeldRope = LookedAtRope;
+        }
+
+        if(HeldRope != null)
+        {
+            HeldRope.Hold();
         }
     }
 
@@ -199,6 +251,7 @@ public class FPSController : IDamageable
         m_fFireTimestamp = Time.time + fFireCooldown;
         m_fPitch -= fRecoil;
         m_fGunKick = 1.0f;
+        Sfx.Play(Sfx.Sounds.GunShot);
 
         if(ImpulseSource != null)
         {
@@ -213,11 +266,13 @@ public class FPSController : IDamageable
         IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
         if(target == null || target == this || !target.IsAlive())
         {
+            Sfx.Play(Sfx.Sounds.BulletImpact, hit.point);
             return;
         }
 
         bool bHeadshot = hit.collider.CompareTag(HeadTag);
         target.TakeDamage(bHeadshot ? target.Max : nDamage);
+        Sfx.Play(bHeadshot ? Sfx.Sounds.HeadshotMarker : Sfx.Sounds.HitMarker);
         OnHitEnemy?.Invoke(bHeadshot);
     }
 
@@ -240,12 +295,18 @@ public class FPSController : IDamageable
             ImpulseSource.GenerateImpulseWithVelocity(Random.insideUnitSphere * 0.3f);
         }
 
+        if(IsAlive())
+        {
+            Sfx.Play(Sfx.Sounds.PlayerHurt);
+        }
+
         OnHurt?.Invoke();
     }
 
     protected override void OnDeath()
     {
         bCanMove = false;
+        Sfx.Play(Sfx.Sounds.PlayerDeath);
         OnDied?.Invoke();
     }
 }

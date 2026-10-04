@@ -52,6 +52,7 @@ public class FPSLevel : MonoBehaviour
     Vector3 m_vElevatorRest;
     float m_fCrosshairFlash;
     bool bHeadshotFlash;
+    AudioSource m_ElevatorLoop;
 
     void Awake()
     {
@@ -81,6 +82,9 @@ public class FPSLevel : MonoBehaviour
         Player.OnHurt -= HandlePlayerHurt;
         Player.OnDied -= HandlePlayerDied;
         Player.OnHitEnemy -= HandleHitEnemy;
+
+        Sfx.StopLoop(m_ElevatorLoop);
+        m_ElevatorLoop = null;
     }
 
     public void Enter()
@@ -108,6 +112,7 @@ public class FPSLevel : MonoBehaviour
     {
         bTransitioning = true;
         SetBarActive(false);
+        StartElevatorSound();
 
         Transform cameraTransform = m_Camera.transform;
         m_vBarCameraPosition = cameraTransform.position;
@@ -131,6 +136,7 @@ public class FPSLevel : MonoBehaviour
         StartEncounter();
 
         yield return RideElevator(vTop, m_vElevatorRest, true);
+        StopElevatorSound();
 
         Player.SetCanMove(true);
         spawner.StartSpawning();
@@ -185,8 +191,15 @@ public class FPSLevel : MonoBehaviour
         string sMessage;
         if(bExtracted)
         {
+            StartElevatorSound();
             yield return RideElevator(m_vElevatorRest, m_vElevatorRest + Vector3.up * fRideHeight, false);
+            StopElevatorSound();
+
             sMessage = BankHaul();
+            if(!string.IsNullOrEmpty(sMessage))
+            {
+                Sfx.Play(Sfx.Sounds.HarvestBanked);
+            }
         }
         else
         {
@@ -231,6 +244,7 @@ public class FPSLevel : MonoBehaviour
         Transform cameraTransform = m_Camera.transform;
         cameraTransform.rotation = m_qBarCameraRotation;
         Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
+        StartElevatorSound();
         for(float fElapsed = 0.0f; fElapsed < fDescentDuration; fElapsed += Time.deltaTime)
         {
             float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDescentDuration);
@@ -240,6 +254,7 @@ public class FPSLevel : MonoBehaviour
         }
         cameraTransform.position = m_vBarCameraPosition;
         Fader.alpha = 0.0f;
+        StopElevatorSound();
 
         SetBarActive(true);
         bTransitioning = false;
@@ -261,7 +276,21 @@ public class FPSLevel : MonoBehaviour
         Crosshair.color = Color.Lerp(Color.white, bHeadshotFlash ? HeadshotColor : Color.white, m_fCrosshairFlash);
         Crosshair.rectTransform.localScale = Vector3.one * (1.0f + m_fCrosshairFlash * (bHeadshotFlash ? 1.5f : 0.6f));
 
-        PromptText.text = Player.LookedAtRope != null ? "HOLD [E] TO GO UP" : "";
+        PromptText.text = Player.LookedAtRope != null || Player.HeldRope != null ? "HOLD [E] TO GO UP" : "";
+    }
+
+    void StartElevatorSound()
+    {
+        Sfx.StopLoop(m_ElevatorLoop);
+        Sfx.Play(Sfx.Sounds.ElevatorStart);
+        m_ElevatorLoop = Sfx.PlayLoop(Sfx.Sounds.ElevatorMotor);
+    }
+
+    void StopElevatorSound()
+    {
+        Sfx.StopLoop(m_ElevatorLoop);
+        m_ElevatorLoop = null;
+        Sfx.Play(Sfx.Sounds.ElevatorArrive);
     }
 
     IEnumerator Fade(float fFrom, float fTo)
@@ -300,6 +329,7 @@ public class FPSLevel : MonoBehaviour
         }
 
         m_Haul[type] = (m_Haul.TryGetValue(type, out int nCount) ? nCount : 0) + amount;
+        Sfx.Play(Sfx.Sounds.PickupCollect);
         RefreshHud();
     }
 

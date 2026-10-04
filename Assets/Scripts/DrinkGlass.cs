@@ -21,6 +21,7 @@ public class DrinkGlass : MonoBehaviour
     {
         GameObject juiceInstance = Instantiate(juicePrefab, ingredientSpawn.position, Quaternion.identity);
         juiceInstance.GetComponent<IngredientJuice>().Initialize(type, this);
+        Sfx.Play(Sfx.Sounds.IngredientPour, ingredientSpawn.position);
 
         fallingJuices.Add(juiceInstance);
     }
@@ -30,6 +31,7 @@ public class DrinkGlass : MonoBehaviour
         fallingJuices.Remove(juiceInstance);
         containedIngredients.Add(type);
         TintWater(ingredientColor);
+        Sfx.Play(Sfx.Sounds.IngredientSplash, transform.position);
         Destroy(juiceInstance);
     }
 

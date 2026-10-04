@@ -17,6 +17,7 @@ public class ElevatorRope : MonoBehaviour
     float m_fLastHoldTime = float.NegativeInfinity;
     bool bDragging;
     bool bTriggered;
+    bool bWasPulled;
     Plane m_DragPlane;
     float m_fDragStartY;
     float m_fDragStartPull;
@@ -67,6 +68,13 @@ public class ElevatorRope : MonoBehaviour
             bTriggered = false;
         }
 
+        bool bPulled = m_fPull > 0.02f;
+        if(bPulled && !bWasPulled)
+        {
+            Sfx.Play(Sfx.Sounds.RopePull, Handle.position);
+        }
+        bWasPulled = bPulled;
+
         Refresh();
     }
 
@@ -105,6 +113,8 @@ public class ElevatorRope : MonoBehaviour
 
     void Trigger()
     {
+        Sfx.Play(Sfx.Sounds.RopeTrigger, Handle.position);
+
         if(bDescend)
         {
             Level.Enter();

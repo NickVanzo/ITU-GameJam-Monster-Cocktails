@@ -33,6 +33,7 @@ public class CustomerManager : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
+        Sfx.Play(Sfx.Sounds.UIClick);
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
@@ -77,6 +78,7 @@ public class CustomerManager : MonoBehaviour
         
         GameObject prefab = customerPrefabs[customersServed];
         Instantiate(prefab, waypoints[0].position, waypoints[0].rotation);
+        Sfx.Play(Sfx.Sounds.CustomerArrive);
         customersServed++;
     }
 }

@@ -5,6 +5,7 @@ public class SceneManager : MonoBehaviour
 {
     public void StartGame()
     {
+        Sfx.Play(Sfx.Sounds.UIClick);
         UnityEngine.SceneManagement.SceneManager.LoadScene(1);
     }
 
@@ -15,6 +16,7 @@ public class SceneManager : MonoBehaviour
 
     public void LoadMainMenu()
     {
+        Sfx.Play(Sfx.Sounds.UIClick);
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 }

@@ -35,10 +35,13 @@ public class Customer : MonoBehaviour
 
     [SerializeField] private Dialogue startingDialogue;
 
+    [SerializeField] private float footstepLength = 0.8f;
+
     public event System.Action<Customer, string> OnSpeak;
 
     private State state;
     private Dialogue currentDialogue;
+    private float footstepDistance;
 
     void Start()
     {
@@ -51,6 +54,8 @@ public class Customer : MonoBehaviour
 
     void Update()
     {
+        UpdateFootsteps();
+
         if (state == State.WaitingForDrink || state == State.InDialogue)
         {
             return;
@@ -90,13 +95,25 @@ public class Customer : MonoBehaviour
 
         if (IsCorrectDrink(servedIngredients))
         {
+            Sfx.Play(Sfx.Sounds.CustomerHappy, transform.position);
             Speak(satisfiedLine);
             StartCoroutine(BeginDialogueAfterDelay());
         }
         else
         {
+            Sfx.Play(Sfx.Sounds.CustomerAngry, transform.position);
             Speak(wrongDrinkLine);
             StartCoroutine(RepeatRequestAfterDelay());
+        }
+    }
+
+    private void UpdateFootsteps()
+    {
+        footstepDistance += agent.velocity.magnitude * Time.deltaTime;
+        if (footstepDistance >= footstepLength)
+        {
+            footstepDistance -= footstepLength;
+            Sfx.Play(Sfx.Sounds.CustomerFootstep, transform.position);
         }
     }
 
@@ -194,6 +211,7 @@ public class Customer : MonoBehaviour
 
     private void Speak(string line)
     {
+        Sfx.Play(Sfx.Sounds.CustomerSpeak, transform.position);
         dialogueText.text = line;
         dialogueCanvas.SetActive(true);
         OnSpeak?.Invoke(this, line);
