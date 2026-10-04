@@ -23,10 +23,7 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        MaterialInventory.Add(IngredientType.Crux, 100);
-        MaterialInventory.Add(IngredientType.ZombieBrain, 100);
-        MaterialInventory.Add(IngredientType.Rat, 100);
-        MaterialInventory.Add(IngredientType.HolyBlood, 100);
+        
         
         currentRoom = Rooms.MainRoom;
         
