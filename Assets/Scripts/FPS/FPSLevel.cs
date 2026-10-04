@@ -11,6 +11,8 @@ public class FPSLevel : MonoBehaviour
     public Spawner spawner;
     public FPSController Player;
     public Transform ArenaElevator;
+    [Tooltip("The elevator in the bar. Elevator sounds come from here while the camera sinks or rises.")]
+    public Transform BarElevator;
     public Transform PlayerSpawn;
     public CinemachineCamera FPSCamera;
     public CinemachineBrain Brain;
@@ -61,6 +63,8 @@ public class FPSLevel : MonoBehaviour
     float m_fCrosshairFlash;
     bool bHeadshotFlash;
     AudioSource m_ElevatorLoop;
+    Transform m_ElevatorSound;
+    Transform m_ElevatorSoundSource;
     float m_fMusicVolume;
     Coroutine m_MusicFade;
 
@@ -69,6 +73,10 @@ public class FPSLevel : MonoBehaviour
         MaterialInventory.Clear();
         m_Camera = Brain.GetComponent<Camera>();
         m_vElevatorRest = ArenaElevator.position;
+
+        // Elevator sounds follow this, and it sits on whichever elevator is moving.
+        m_ElevatorSound = new GameObject("ElevatorSound").transform;
+        m_ElevatorSound.SetParent(transform, false);
         Brain.enabled = false;
         FPSCamera.gameObject.SetActive(false);
         Player.gameObject.SetActive(false);
@@ -128,7 +136,7 @@ public class FPSLevel : MonoBehaviour
     {
         bTransitioning = true;
         SetBarActive(false);
-        StartElevatorSound();
+        StartElevatorSound(BarElevator);
 
         Transform cameraTransform = m_Camera.transform;
         m_vBarCameraPosition = cameraTransform.position;
@@ -150,6 +158,7 @@ public class FPSLevel : MonoBehaviour
         Vector3 vTop = m_vElevatorRest + Vector3.up * fRideHeight;
         ArenaElevator.position = vTop;
         StartEncounter();
+        SetElevatorSoundSource(ArenaElevator);
 
         yield return RideElevator(vTop, m_vElevatorRest, fRideDownDuration, true);
         StopElevatorSound();
@@ -213,7 +222,7 @@ public class FPSLevel : MonoBehaviour
         string sMessage;
         if(bExtracted)
         {
-            StartElevatorSound();
+            StartElevatorSound(ArenaElevator);
             yield return RideElevator(m_vElevatorRest, m_vElevatorRest + Vector3.up * fRideHeight, fRideUpDuration, false);
             StopElevatorSound();
 
@@ -266,7 +275,7 @@ public class FPSLevel : MonoBehaviour
         Transform cameraTransform = m_Camera.transform;
         cameraTransform.rotation = m_qBarCameraRotation;
         Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
-        StartElevatorSound();
+        StartElevatorSound(BarElevator);
         for(float fElapsed = 0.0f; fElapsed < fAscentDuration; fElapsed += Time.deltaTime)
         {
             float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fAscentDuration);
@@ -301,18 +310,34 @@ public class FPSLevel : MonoBehaviour
         PromptText.text = Player.LookedAtRope != null || Player.HeldRope != null ? "HOLD [E] TO GO UP" : "";
     }
 
-    void StartElevatorSound()
+    void StartElevatorSound(Transform elevator)
     {
+        SetElevatorSoundSource(elevator);
         Sfx.StopLoop(m_ElevatorLoop);
-        Sfx.Play(Sfx.Sounds.ElevatorStart);
-        m_ElevatorLoop = Sfx.PlayLoop(Sfx.Sounds.ElevatorMotor);
+        Sfx.Play(Sfx.Sounds.ElevatorStart, m_ElevatorSound);
+        m_ElevatorLoop = Sfx.PlayLoop(Sfx.Sounds.ElevatorMotor, m_ElevatorSound);
     }
 
     void StopElevatorSound()
     {
         Sfx.StopLoop(m_ElevatorLoop);
         m_ElevatorLoop = null;
-        Sfx.Play(Sfx.Sounds.ElevatorArrive);
+        Sfx.Play(Sfx.Sounds.ElevatorArrive, m_ElevatorSound);
+    }
+
+    // Without a bar elevator the sounds sit on the camera, which is the same as playing them 2D.
+    void SetElevatorSoundSource(Transform elevator)
+    {
+        m_ElevatorSoundSource = elevator != null ? elevator : m_Camera.transform;
+        m_ElevatorSound.position = m_ElevatorSoundSource.position;
+    }
+
+    void LateUpdate()
+    {
+        if(m_ElevatorSoundSource != null)
+        {
+            m_ElevatorSound.position = m_ElevatorSoundSource.position;
+        }
     }
 
     void PlayMusic()

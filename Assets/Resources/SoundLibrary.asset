@@ -175,16 +175,16 @@ MonoBehaviour:
     Volume: 1
     PitchRange: {x: 0.95, y: 1.05}
     SpatialBlend: 1
-    MaxDistance: 25
+    MaxDistance: 15
     MaxInstances: 0
     RestartWhenFull: 0
   ElevatorStart:
     Clips:
-    - {fileID: 8300000, guid: 47d6de463ca5a104488962f13f8651a8, type: 3}
+    - {fileID: 8300000, guid: 5c70b2cf9fe2432ba14486b2d1440688, type: 3}
     Volume: 1
     PitchRange: {x: 0.95, y: 1.05}
-    SpatialBlend: 0
-    MaxDistance: 25
+    SpatialBlend: 1
+    MaxDistance: 15
     MaxInstances: 0
     RestartWhenFull: 0
   ElevatorMotor:
@@ -192,15 +192,15 @@ MonoBehaviour:
     - {fileID: 8300000, guid: a9064b682c854554193b5202a7bb5a00, type: 3}
     Volume: 0.5
     PitchRange: {x: 1, y: 1}
-    SpatialBlend: 0
-    MaxDistance: 25
+    SpatialBlend: 1
+    MaxDistance: 15
     MaxInstances: 0
     RestartWhenFull: 0
   ElevatorArrive:
     Clips: []
     Volume: 1
     PitchRange: {x: 0.95, y: 1.05}
-    SpatialBlend: 0
+    SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0

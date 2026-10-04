@@ -29,4 +29,4 @@ MonoBehaviour:
   active: 1
   ShadowColor:
     m_OverrideState: 1
-    m_Value: {r: 0, g: 0.035399996, b: 0.059, a: 1}
+    m_Value: {r: 0, g: 0.04, b: 0, a: 1}

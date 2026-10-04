@@ -39,6 +39,10 @@ public class FPSController : IDamageable
 
     [Header("Zoom")]
     [SerializeField] CameraZoom Zoom = new();
+    [Tooltip("Gun position while fully zoomed, with its sights on the centre of the screen.")]
+    [SerializeField] Vector3 vGunAimPosition = new(0.0f, -0.077f, 0.3f);
+    [Tooltip("Recoil is multiplied by this while fully zoomed, so the gun doesn't flip across the view.")]
+    [SerializeField] float fGunZoomedRecoil = 0.25f;
 
     [Header("Gun Bob")]
     [SerializeField] float fGunIdleBob = 0.008f;
@@ -65,6 +69,7 @@ public class FPSController : IDamageable
     float m_fGunBobPhase;
     float m_fGunWalkBlend;
     Vector3 m_vGunRestPosition;
+    Vector3 m_vMuzzleOffset;
     float m_fBaseFieldOfView;
 
     InputAction MoveAction;
@@ -87,6 +92,12 @@ public class FPSController : IDamageable
         if(Gun != null)
         {
             m_vGunRestPosition = Gun.localPosition;
+
+            // The muzzle flash sits next to the gun, keep it at the muzzle as the gun moves to aim.
+            if(MuzzleFlash != null)
+            {
+                m_vMuzzleOffset = MuzzleFlash.transform.localPosition - m_vGunRestPosition;
+            }
         }
 
         InputActionAsset actions = InputSystem.actions;
@@ -153,6 +164,7 @@ public class FPSController : IDamageable
         {
             LookedAtRope = null;
             HeldRope = null;
+            UpdateGun();
             return;
         }
 
@@ -335,8 +347,17 @@ public class FPSController : IDamageable
         }
 
         m_fGunKick = Mathf.MoveTowards(m_fGunKick, 0.0f, Time.deltaTime * 10.0f);
-        Gun.localPosition = m_vGunRestPosition + ComputeGunBob() + new Vector3(0.0f, 0.0f, -0.08f * m_fGunKick);
-        Gun.localRotation = Quaternion.Euler(-65.0f * m_fGunKick, 0.0f, 0.0f);
+        float fKick = m_fGunKick * Mathf.Lerp(1.0f, fGunZoomedRecoil, Zoom.Amount);
+
+        // Slides from the hip to the sights along with the zoom.
+        Vector3 vPosition = Vector3.Lerp(m_vGunRestPosition, vGunAimPosition, Zoom.Amount) + ComputeGunBob();
+        Gun.localPosition = vPosition + new Vector3(0.0f, 0.0f, -0.08f * fKick);
+        Gun.localRotation = Quaternion.Euler(-65.0f * fKick, 0.0f, 0.0f);
+
+        if(MuzzleFlash != null)
+        {
+            MuzzleFlash.transform.localPosition = vPosition + m_vMuzzleOffset;
+        }
     }
 
     // Slow breathing bob when standing still, one dip per footstep plus a little sway when walking.

@@ -4,6 +4,7 @@ using UnityEngine;
 //
 //      Sfx.Play(Sfx.Sounds.GunShot);                       2D (UI, the player's own sounds)
 //      Sfx.Play(Sfx.Sounds.ZombieGroan, transform.position); 3D at a point
+//      Sfx.Play(Sfx.Sounds.ElevatorStart, transform);      3D, follows the transform while it plays
 //      AudioSource loop = Sfx.PlayLoop(Sfx.Sounds.ElevatorMotor); ... Sfx.StopLoop(loop);
 public static class Sfx
 {
@@ -13,6 +14,7 @@ public static class Sfx
     static AudioSource[] s_aSources;
     static Sound[] s_aOwners;
     static float[] s_aStartTimes;
+    static Transform[] s_aFollow;
 
     public static SoundLibrary Sounds
     {
@@ -40,6 +42,7 @@ public static class Sfx
         s_aSources = null;
         s_aOwners = null;
         s_aStartTimes = null;
+        s_aFollow = null;
     }
 
     // No position = 2D. With a position = 3D at that point, using the sound's SpatialBlend.
@@ -48,10 +51,21 @@ public static class Sfx
         PlayInternal(sound, vPosition, false);
     }
 
+    // 3D, and the sound moves with the transform until it ends.
+    public static void Play(Sound sound, Transform follow)
+    {
+        PlayInternal(sound, follow.position, false, follow);
+    }
+
     // Returns the source to pass to StopLoop, or null when the sound has no clip.
     public static AudioSource PlayLoop(Sound sound, Vector3? vPosition = null)
     {
         return PlayInternal(sound, vPosition, true);
+    }
+
+    public static AudioSource PlayLoop(Sound sound, Transform follow)
+    {
+        return PlayInternal(sound, follow.position, true, follow);
     }
 
     public static void StopLoop(AudioSource source)
@@ -80,7 +94,7 @@ public static class Sfx
         }
     }
 
-    static AudioSource PlayInternal(Sound sound, Vector3? vPosition, bool bLoop)
+    static AudioSource PlayInternal(Sound sound, Vector3? vPosition, bool bLoop, Transform follow = null)
     {
         AudioClip clip = sound?.PickClip();
         if(clip == null || !Application.isPlaying)
@@ -118,7 +132,33 @@ public static class Sfx
 
         s_aOwners[nIndex] = sound;
         s_aStartTimes[nIndex] = Time.unscaledTime;
+        s_aFollow[nIndex] = follow;
         return source;
+    }
+
+    // Called every frame by SfxFollow, which lives on the pool object.
+    public static void UpdateFollow()
+    {
+        if(s_aFollow == null)
+        {
+            return;
+        }
+
+        for(int i = 0; i < s_aFollow.Length; ++i)
+        {
+            if(s_aFollow[i] == null)
+            {
+                continue;
+            }
+
+            if(s_aSources[i] == null || !s_aSources[i].isPlaying)
+            {
+                s_aFollow[i] = null;
+                continue;
+            }
+
+            s_aSources[i].transform.position = s_aFollow[i].position;
+        }
     }
 
     static int CountPlaying(Sound sound)
@@ -179,10 +219,12 @@ public static class Sfx
 
         var root = new GameObject("Sfx");
         Object.DontDestroyOnLoad(root);
+        root.AddComponent<SfxFollow>();
 
         s_aSources = new AudioSource[nPoolSize];
         s_aOwners = new Sound[nPoolSize];
         s_aStartTimes = new float[nPoolSize];
+        s_aFollow = new Transform[nPoolSize];
 
         for(int i = 0; i < nPoolSize; ++i)
         {
