@@ -13,7 +13,6 @@ public class SoundLibrary : ScriptableObject
     public Sound HitMarker = new() { SpatialBlend = 0.0f, Volume = 0.6f, MaxInstances = 2 };
     public Sound HeadshotMarker = new() { SpatialBlend = 0.0f };
     public Sound PlayerFootstep = new() { SpatialBlend = 0.0f, Volume = 0.5f, PitchRange = new(0.85f, 1.15f) };
-    public Sound PlayerJump = new() { SpatialBlend = 0.0f, Volume = 0.6f };
     public Sound PlayerLand = new() { SpatialBlend = 0.0f, Volume = 0.7f };
     public Sound PlayerHurt = new() { SpatialBlend = 0.0f };
     public Sound PlayerDeath = new() { SpatialBlend = 0.0f };
@@ -53,4 +52,7 @@ public class SoundLibrary : ScriptableObject
     public Sound CustomerAngry = new();
     public Sound UIClick = new() { SpatialBlend = 0.0f, Volume = 0.7f };
     public Sound SoulHarvest  = new() { SpatialBlend = 0.0f, Volume = 0.7f };
+
+    [Header("Armory")]
+    public Sound GunSelect = new() { SpatialBlend = 0.0f, MaxInstances = 1, RestartWhenFull = true };
 }

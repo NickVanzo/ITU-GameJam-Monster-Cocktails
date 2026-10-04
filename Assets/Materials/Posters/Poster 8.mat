@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Poster 7
+  m_Name: Poster 8
   m_Shader: {fileID: -6465566751694194690, guid: 1d707c52c130eda44875d1b5490b34ca, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
