@@ -8,6 +8,8 @@ public class DialogueChoiceUI : MonoBehaviour
 
     [SerializeField] private GameObject choice1;
     [SerializeField] private GameObject choice2;
+    
+    [SerializeField] private GameObject tutoral;
 
     private Button choice1Button;
     private Button choice2Button;
@@ -57,5 +59,15 @@ public class DialogueChoiceUI : MonoBehaviour
     private static void PlayClickSound()
     {
         Sfx.Play(Sfx.Sounds.UIClick);
+    }
+
+    public void ShowTutorial()
+    {
+        DialogueChoiceUI.Instance.tutoral.SetActive(true);        
+    }
+
+    public void HideTutorial()
+    {   
+        DialogueChoiceUI.Instance.tutoral.SetActive(false);        
     }
 }

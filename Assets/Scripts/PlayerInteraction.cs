@@ -5,6 +5,7 @@ public class PlayerInteraction : MonoBehaviour
     private const string IngredientTag = "Ingredient";
     private const string FlushButtonTag = "FlushButton";
     private const string ServeButtonTag = "ServeButton";
+    private const string TutorialTag = "Tutorial";
 
     [SerializeField] private Player player;
     [SerializeField] private DrinkGlass kitchenGlass;
@@ -42,6 +43,10 @@ public class PlayerInteraction : MonoBehaviour
         {
             Sfx.Play(Sfx.Sounds.GlassFlush, kitchenGlass.transform.position);
             kitchenGlass.Flush();
+        }
+        else if (target.CompareTag(TutorialTag))
+        {
+            DialogueChoiceUI.Instance.ShowTutorial();
         }
         else if (target.CompareTag(ServeButtonTag))
         {

@@ -36,7 +36,7 @@ public class Customer : MonoBehaviour
     [SerializeField] private Dialogue startingDialogue;
 
     [SerializeField] private float footstepLength = 0.8f;
-
+    
     public event System.Action<Customer, string> OnSpeak;
 
     private State state;
@@ -147,7 +147,7 @@ public class Customer : MonoBehaviour
     private IEnumerator BeginDialogueAfterDelay()
     {
         yield return new WaitForSeconds(satisfiedDisplaySeconds);
-
+        
         currentDialogue = startingDialogue;
         state = State.InDialogue;
         ShowCurrentDialogue();
@@ -202,8 +202,10 @@ public class Customer : MonoBehaviour
 
     private IEnumerator EndDialogueAfterDelay()
     {
-        yield return new WaitForSeconds(dialogueEndDelaySeconds);
+        Sfx.Play(Sfx.Sounds.SoulHarvest, transform.position);
 
+        yield return new WaitForSeconds(dialogueEndDelaySeconds);
+    
         dialogueCanvas.SetActive(false);
         state = State.MovingToExit;
         agent.SetDestination(waypoints[2].position);

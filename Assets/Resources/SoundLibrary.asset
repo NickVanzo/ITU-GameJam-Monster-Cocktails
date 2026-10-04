@@ -309,3 +309,12 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 1
     RestartWhenFull: 0
+  SoulHarvest:
+    Clips:
+    - {fileID: 8300000, guid: 92e624c3386834a26ba1bec641d9bd6a, type: 3}
+    Volume: 0.7
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 0
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
