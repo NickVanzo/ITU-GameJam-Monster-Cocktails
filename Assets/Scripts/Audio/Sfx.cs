@@ -63,6 +63,23 @@ public static class Sfx
         }
     }
 
+    // Cuts off every copy of this sound that is currently playing.
+    public static void Stop(Sound sound)
+    {
+        if(sound == null || s_aSources == null || s_aSources[0] == null)
+        {
+            return;
+        }
+
+        for(int i = 0; i < s_aSources.Length; ++i)
+        {
+            if(s_aOwners[i] == sound && s_aSources[i].isPlaying)
+            {
+                StopLoop(s_aSources[i]);
+            }
+        }
+    }
+
     static AudioSource PlayInternal(Sound sound, Vector3? vPosition, bool bLoop)
     {
         AudioClip clip = sound?.PickClip();
@@ -73,12 +90,21 @@ public static class Sfx
 
         EnsurePool();
 
+        int nIndex;
         if(sound.MaxInstances > 0 && CountPlaying(sound) >= sound.MaxInstances)
         {
-            return null;
+            if(!sound.RestartWhenFull)
+            {
+                return null;
+            }
+
+            nIndex = FindOldestPlaying(sound);
+        }
+        else
+        {
+            nIndex = FindSource();
         }
 
-        int nIndex = FindSource();
         AudioSource source = s_aSources[nIndex];
         source.transform.position = vPosition ?? Vector3.zero;
         source.clip = clip;
@@ -107,6 +133,20 @@ public static class Sfx
         }
 
         return nCount;
+    }
+
+    static int FindOldestPlaying(Sound sound)
+    {
+        int nOldest = -1;
+        for(int i = 0; i < s_aSources.Length; ++i)
+        {
+            if(s_aOwners[i] == sound && s_aSources[i].isPlaying && (nOldest < 0 || s_aStartTimes[i] < s_aStartTimes[nOldest]))
+            {
+                nOldest = i;
+            }
+        }
+
+        return nOldest;
     }
 
     // First idle source, otherwise steal the oldest one-shot. Loops are never stolen.

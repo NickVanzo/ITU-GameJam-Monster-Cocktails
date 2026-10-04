@@ -14,12 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Output: {fileID: 0}
   GunShot:
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 527c51e677864ed8822f1a7761d96711, type: 3}
     Volume: 1
     PitchRange: {x: 0.95, y: 1.05}
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 3
+    RestartWhenFull: 1
   BulletImpact:
     Clips: []
     Volume: 1
@@ -27,6 +29,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 4
+    RestartWhenFull: 0
   HitMarker:
     Clips: []
     Volume: 0.6
@@ -34,6 +37,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 2
+    RestartWhenFull: 0
   HeadshotMarker:
     Clips: []
     Volume: 1
@@ -41,6 +45,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   PlayerFootstep:
     Clips: []
     Volume: 0.5
@@ -48,6 +53,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   PlayerJump:
     Clips: []
     Volume: 0.6
@@ -55,6 +61,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   PlayerLand:
     Clips: []
     Volume: 0.7
@@ -62,6 +69,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   PlayerHurt:
     Clips: []
     Volume: 1
@@ -69,6 +77,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   PlayerDeath:
     Clips: []
     Volume: 1
@@ -76,6 +85,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   PickupCollect:
     Clips: []
     Volume: 1
@@ -83,13 +93,16 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 2
+    RestartWhenFull: 0
   ZombieSpawn:
-    Clips: []
-    Volume: 1
+    Clips:
+    - {fileID: 8300000, guid: 27272ab52c94ad6478aa066d93159764, type: 3}
+    Volume: 0.333
     PitchRange: {x: 0.95, y: 1.05}
     SpatialBlend: 1
     MaxDistance: 40
     MaxInstances: 3
+    RestartWhenFull: 0
   ZombieFootstep:
     Clips: []
     Volume: 0.6
@@ -97,13 +110,17 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 15
     MaxInstances: 6
+    RestartWhenFull: 0
   ZombieGroan:
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 19bbb925c7d0be94fa60832366938b69, type: 3}
+    - {fileID: 8300000, guid: a16855b6921322843b1ccf1e933d107d, type: 3}
     Volume: 1
     PitchRange: {x: 0.8, y: 1.1}
     SpatialBlend: 1
     MaxDistance: 20
     MaxInstances: 4
+    RestartWhenFull: 0
   ZombieAttack:
     Clips: []
     Volume: 1
@@ -111,6 +128,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 3
+    RestartWhenFull: 0
   ZombieHurt:
     Clips: []
     Volume: 1
@@ -118,6 +136,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 4
+    RestartWhenFull: 0
   ZombieDeath:
     Clips: []
     Volume: 1
@@ -125,22 +144,24 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 4
+    RestartWhenFull: 0
   ZoomIn:
     Clips:
-    - {fileID: 8300000, guid: d785e88af75377543b66eb6b6ca97361, type: 3}
-    Volume: 1
-    PitchRange: {x: 0.95, y: 1.05}
+    - {fileID: 8300000, guid: 6545a986d180463e897643410c568bff, type: 3}
+    Volume: 0.32
+    PitchRange: {x: 0.95, y: 1}
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 1
+    RestartWhenFull: 1
   ZoomOut:
-    Clips:
-    - {fileID: 8300000, guid: d785e88af75377543b66eb6b6ca97361, type: 3}
-    Volume: 1
+    Clips: []
+    Volume: 0.25
     PitchRange: {x: 0.25, y: 0.35}
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 1
+    RestartWhenFull: 1
   RopePull:
     Clips: []
     Volume: 1
@@ -148,6 +169,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   RopeTrigger:
     Clips: []
     Volume: 1
@@ -155,20 +177,25 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   ElevatorStart:
-    Clips: []
+    Clips:
+    - {fileID: 8300000, guid: 47d6de463ca5a104488962f13f8651a8, type: 3}
     Volume: 1
     PitchRange: {x: 0.95, y: 1.05}
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   ElevatorMotor:
-    Clips: []
-    Volume: 1
+    Clips:
+    - {fileID: 8300000, guid: a9064b682c854554193b5202a7bb5a00, type: 3}
+    Volume: 0.5
     PitchRange: {x: 1, y: 1}
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   ElevatorArrive:
     Clips: []
     Volume: 1
@@ -176,6 +203,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   HarvestBanked:
     Clips: []
     Volume: 1
@@ -183,6 +211,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   RoomSwitch:
     Clips: []
     Volume: 1
@@ -190,6 +219,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   IngredientPour:
     Clips: []
     Volume: 1
@@ -197,6 +227,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   IngredientSplash:
     Clips: []
     Volume: 1
@@ -204,6 +235,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 3
+    RestartWhenFull: 0
   OutOfStock:
     Clips: []
     Volume: 1
@@ -211,6 +243,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   GlassFlush:
     Clips: []
     Volume: 1
@@ -218,6 +251,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   Serve:
     Clips: []
     Volume: 1
@@ -225,6 +259,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   CustomerArrive:
     Clips: []
     Volume: 1
@@ -232,6 +267,7 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   CustomerFootstep:
     Clips: []
     Volume: 0.5
@@ -239,6 +275,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 20
     MaxInstances: 0
+    RestartWhenFull: 0
   CustomerSpeak:
     Clips: []
     Volume: 1
@@ -246,6 +283,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 1
+    RestartWhenFull: 0
   CustomerHappy:
     Clips: []
     Volume: 1
@@ -253,6 +291,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   CustomerAngry:
     Clips: []
     Volume: 1
@@ -260,6 +299,7 @@ MonoBehaviour:
     SpatialBlend: 1
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0
   UIClick:
     Clips: []
     Volume: 0.7
@@ -267,3 +307,4 @@ MonoBehaviour:
     SpatialBlend: 0
     MaxDistance: 25
     MaxInstances: 0
+    RestartWhenFull: 0

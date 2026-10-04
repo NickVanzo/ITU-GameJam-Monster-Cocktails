@@ -14,6 +14,8 @@ public class Sound
     public float MaxDistance = 25.0f;
     [Tooltip("How many copies of this sound may play at once. 0 = no limit.")]
     public int MaxInstances = 0;
+    [Tooltip("When MaxInstances copies are already playing: on = cut the oldest one off and play the new one, off = skip the new one.")]
+    public bool RestartWhenFull = false;
 
     public AudioClip PickClip()
     {

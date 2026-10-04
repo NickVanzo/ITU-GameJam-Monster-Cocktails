@@ -8,7 +8,7 @@ public class SoundLibrary : ScriptableObject
     public AudioMixerGroup Output;
 
     [Header("FPS - Player")]
-    public Sound GunShot = new() { SpatialBlend = 0.0f, MaxInstances = 3 };
+    public Sound GunShot = new() { SpatialBlend = 0.0f, MaxInstances = 3, RestartWhenFull = true };
     public Sound BulletImpact = new() { MaxInstances = 4 };
     public Sound HitMarker = new() { SpatialBlend = 0.0f, Volume = 0.6f, MaxInstances = 2 };
     public Sound HeadshotMarker = new() { SpatialBlend = 0.0f };
@@ -28,8 +28,8 @@ public class SoundLibrary : ScriptableObject
     public Sound ZombieDeath = new() { MaxInstances = 4 };
 
     [Header("Camera")]
-    public Sound ZoomIn = new() { SpatialBlend = 0.0f, MaxInstances = 1 };
-    public Sound ZoomOut = new() { SpatialBlend = 0.0f, MaxInstances = 1 };
+    public Sound ZoomIn = new() { SpatialBlend = 0.0f, MaxInstances = 1, RestartWhenFull = true };
+    public Sound ZoomOut = new() { SpatialBlend = 0.0f, MaxInstances = 1, RestartWhenFull = true };
 
     [Header("Elevator")]
     public Sound RopePull = new();
