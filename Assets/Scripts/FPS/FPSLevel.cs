@@ -10,6 +10,7 @@ public class FPSLevel : MonoBehaviour
 {
     public Spawner spawner;
     public FPSController Player;
+    public Transform ArenaLighting;
     public Transform ArenaElevator;
     [Tooltip("The elevator in the bar. Elevator sounds come from here while the camera sinks or rises.")]
     public Transform BarElevator;
@@ -80,6 +81,7 @@ public class FPSLevel : MonoBehaviour
         Brain.enabled = false;
         FPSCamera.gameObject.SetActive(false);
         Player.gameObject.SetActive(false);
+        ArenaLighting.gameObject.SetActive(false);
         Hud.SetActive(false);
         Fader.alpha = 0.0f;
         FaderText.text = "";
@@ -173,6 +175,7 @@ public class FPSLevel : MonoBehaviour
     {
         m_Haul.Clear();
         Player.Spawn(PlayerSpawn.position, PlayerSpawn.rotation);
+        ArenaLighting.gameObject.SetActive(true);
         Player.gameObject.SetActive(true);
         FPSCamera.gameObject.SetActive(true);
         Brain.enabled = true;
@@ -261,6 +264,7 @@ public class FPSLevel : MonoBehaviour
         spawner.Clear();
         ArenaElevator.position = m_vElevatorRest;
         Player.gameObject.SetActive(false);
+        ArenaLighting.gameObject.SetActive(false);
         FPSCamera.gameObject.SetActive(false);
         Brain.enabled = false;
         Hud.SetActive(false);

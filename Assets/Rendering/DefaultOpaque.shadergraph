@@ -829,7 +829,7 @@
     "m_Group": {
         "m_Id": ""
     },
-    "m_Name": "BayerDither8 (Custom Function)",
+    "m_Name": "BayerDither (Custom Function)",
     "m_DrawState": {
         "m_Expanded": true,
         "m_Position": {
@@ -860,7 +860,7 @@
         "m_SerializableColors": []
     },
     "m_SourceType": 0,
-    "m_FunctionName": "BayerDither8",
+    "m_FunctionName": "BayerDither",
     "m_FunctionSource": "3211859080d5c0a4999b3922eaba7a22",
     "m_FunctionBody": "Enter function body here..."
 }
@@ -1582,10 +1582,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": 3124.800048828125,
-            "y": 1037.599853515625,
+            "x": 3114.000244140625,
+            "y": 1030.0001220703125,
             "width": 240.0,
-            "height": 421.5999755859375
+            "height": 422.0
         }
     },
     "m_Slots": [
