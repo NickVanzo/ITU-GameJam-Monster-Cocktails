@@ -1,5 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
+using UnitySceneManager = UnityEngine.SceneManagement.SceneManager;
 
 [ExecuteAlways]
 public class LightingManager : MonoBehaviour
@@ -18,11 +20,36 @@ public class LightingManager : MonoBehaviour
         if (!Application.isPlaying)
             return;
 
-        // Volume colliders only mark the room's bounds. Solid ones block clicks (PlayerInteraction) and the FPS player.
         foreach (Volume volume in FindObjectsByType<Volume>(FindObjectsSortMode.None))
         {
-            foreach (Collider bounds in volume.GetComponents<Collider>())
-                bounds.isTrigger = true;
+            MakeBoundsTriggers(volume);            
+        }
+
+        UnitySceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDestroy()
+    {
+        UnitySceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (Volume volume in root.GetComponentsInChildren<Volume>(true))
+            {
+                MakeBoundsTriggers(volume);                
+            }
+        }
+    }
+
+    // needless to say this shit must go
+    static void MakeBoundsTriggers(Volume volume)
+    {
+        foreach (Collider bounds in volume.GetComponents<Collider>())
+        {
+            bounds.isTrigger = true;            
         }
     }
 
@@ -43,7 +70,10 @@ public class LightingManager : MonoBehaviour
     void OnDisable()
     {
         if (stack != null && VolumeManager.instance.isInitialized)
-            VolumeManager.instance.DestroyStack(stack);
+        {
+            VolumeManager.instance.DestroyStack(stack);            
+        }
+
         stack = null;
     }
 }

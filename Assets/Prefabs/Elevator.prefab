@@ -46,8 +46,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca2f99fab653b49409d4dc9473a7ea95, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Level: {fileID: 0}
-  bDescend: 1
+  OnPulled:
+    m_PersistentCalls:
+      m_Calls: []
   Rope: {fileID: 2503966060582137868}
   Handle: {fileID: 1115542017646161502}
   fRopeLength: 2.9

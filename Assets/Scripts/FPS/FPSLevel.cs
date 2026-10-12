@@ -6,21 +6,15 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
 
+// Todo : kinda cringe, either Level interface and include bar or come up with smth else
 public class FPSLevel : MonoBehaviour
 {
     public Spawner spawner;
     public FPSController Player;
     public Transform ArenaLighting;
     public Transform ArenaElevator;
-    [Tooltip("The elevator in the bar. Elevator sounds come from here while the camera sinks or rises.")]
-    public Transform BarElevator;
     public Transform PlayerSpawn;
     public CinemachineCamera FPSCamera;
-    public CinemachineBrain Brain;
-
-    [Header("Bar")]
-    public Behaviour[] aDisableDuringFPS;
-    public GameObject[] aHideDuringFPS;
 
     [Header("UI")]
     public GameObject Hud;
@@ -28,15 +22,8 @@ public class FPSLevel : MonoBehaviour
     public TMP_Text PromptText;
     public Image Crosshair;
     public Image DamageFlash;
-    public CanvasGroup Fader;
-    public TMP_Text FaderText;
 
     [Header("Elevator")]
-    [Tooltip("Bar camera sinking into the floor on the way down.")]
-    [SerializeField] float fDescentDuration = 1.5f;
-    [Tooltip("Bar camera coming back up after the arena.")]
-    [SerializeField] float fAscentDuration = 1.0f;
-    [SerializeField] float fDescentDistance = 4.0f;
     [SerializeField] float fRideDownDuration = 1.8f;
     [SerializeField] float fRideUpDuration = 1.2f;
     [SerializeField] float fRideHeight = 4.0f;
@@ -54,37 +41,22 @@ public class FPSLevel : MonoBehaviour
 
     readonly Dictionary<IngredientType, int> m_Haul = new();
     bool bInEncounter = false;
-    bool bTransitioning = false;
-    Camera m_Camera;
-    Vector3 m_vBarCameraPosition;
-    Quaternion m_qBarCameraRotation;
-    float m_fBarFieldOfView;
-    float m_fBarNearClip;
+    bool bExtracted = false;
+    Elevator m_Elevator;
     Vector3 m_vElevatorRest;
     float m_fCrosshairFlash;
     bool bHeadshotFlash;
-    AudioSource m_ElevatorLoop;
-    Transform m_ElevatorSound;
-    Transform m_ElevatorSoundSource;
     float m_fMusicVolume;
     Coroutine m_MusicFade;
 
     void Awake()
     {
-        MaterialInventory.Clear();
-        m_Camera = Brain.GetComponent<Camera>();
         m_vElevatorRest = ArenaElevator.position;
 
-        // Elevator sounds follow this, and it sits on whichever elevator is moving.
-        m_ElevatorSound = new GameObject("ElevatorSound").transform;
-        m_ElevatorSound.SetParent(transform, false);
-        Brain.enabled = false;
         FPSCamera.gameObject.SetActive(false);
         Player.gameObject.SetActive(false);
         ArenaLighting.gameObject.SetActive(false);
         Hud.SetActive(false);
-        Fader.alpha = 0.0f;
-        FaderText.text = "";
         SetFlashAlpha(0.0f);
 
         if(Music != null)
@@ -108,19 +80,27 @@ public class FPSLevel : MonoBehaviour
         Player.OnHurt -= HandlePlayerHurt;
         Player.OnDied -= HandlePlayerDied;
         Player.OnHitEnemy -= HandleHitEnemy;
-
-        Sfx.StopLoop(m_ElevatorLoop);
-        m_ElevatorLoop = null;
     }
 
-    public void Enter()
+    public IEnumerator Play(Elevator elevator)
     {
-        if(bInEncounter || bTransitioning)
-        {
-            return;
-        }
+        m_Elevator = elevator;
 
-        StartCoroutine(EnterRoutine());
+        Vector3 vTop = m_vElevatorRest + Vector3.up * fRideHeight;
+        ArenaElevator.position = vTop;
+        StartEncounter();
+
+        // Takes over the motor sound of the bar's elevator, so the whole way down sounds like one ride.
+        elevator.StartRideSound(ArenaElevator);
+        yield return RideElevator(vTop, m_vElevatorRest, fRideDownDuration, true);
+        elevator.StopRideSound();
+
+        Player.SetCanMove(true);
+        spawner.StartSpawning();
+        bInEncounter = true;
+
+        yield return new WaitWhile(() => bInEncounter);
+        yield return ExitRoutine();
     }
 
     public void Leave()
@@ -130,45 +110,8 @@ public class FPSLevel : MonoBehaviour
             return;
         }
 
+        bExtracted = true;
         bInEncounter = false;
-        StartCoroutine(ExitRoutine(true));
-    }
-
-    IEnumerator EnterRoutine()
-    {
-        bTransitioning = true;
-        SetBarActive(false);
-        StartElevatorSound(BarElevator);
-
-        Transform cameraTransform = m_Camera.transform;
-        m_vBarCameraPosition = cameraTransform.position;
-        m_qBarCameraRotation = cameraTransform.rotation;
-        m_fBarFieldOfView = m_Camera.fieldOfView;
-        m_fBarNearClip = m_Camera.nearClipPlane;
-
-        Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
-        for(float fElapsed = 0.0f; fElapsed < fDescentDuration; fElapsed += Time.deltaTime)
-        {
-            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDescentDuration);
-            Vector3 vRumble = new Vector3(Mathf.PerlinNoise(fElapsed * 25.0f, 0.0f) - 0.5f, Mathf.PerlinNoise(0.0f, fElapsed * 25.0f) - 0.5f, 0.0f) * 0.04f;
-            cameraTransform.position = Vector3.Lerp(m_vBarCameraPosition, vBottom, t) + vRumble;
-            Fader.alpha = Mathf.InverseLerp(fDescentDuration - fFadeDuration, fDescentDuration, fElapsed);
-            yield return null;
-        }
-        Fader.alpha = 1.0f;
-
-        Vector3 vTop = m_vElevatorRest + Vector3.up * fRideHeight;
-        ArenaElevator.position = vTop;
-        StartEncounter();
-        SetElevatorSoundSource(ArenaElevator);
-
-        yield return RideElevator(vTop, m_vElevatorRest, fRideDownDuration, true);
-        StopElevatorSound();
-
-        Player.SetCanMove(true);
-        spawner.StartSpawning();
-        bInEncounter = true;
-        bTransitioning = false;
     }
 
     public void StartEncounter()
@@ -178,7 +121,6 @@ public class FPSLevel : MonoBehaviour
         ArenaLighting.gameObject.SetActive(true);
         Player.gameObject.SetActive(true);
         FPSCamera.gameObject.SetActive(true);
-        Brain.enabled = true;
         Hud.SetActive(true);
         PromptText.text = "";
         SetFlashAlpha(0.0f);
@@ -192,6 +134,7 @@ public class FPSLevel : MonoBehaviour
 
     IEnumerator RideElevator(Vector3 vFrom, Vector3 vTo, float fDuration, bool bFadeIn)
     {
+        CanvasGroup fader = m_Elevator.Fader;
         Vector3 vPlayerOffset = Player.transform.position - ArenaElevator.position;
 
         for(float fElapsed = 0.0f; fElapsed < fDuration; fElapsed += Time.deltaTime)
@@ -199,7 +142,7 @@ public class FPSLevel : MonoBehaviour
             float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDuration);
             ArenaElevator.position = Vector3.Lerp(vFrom, vTo, t);
             Player.Teleport(ArenaElevator.position + vPlayerOffset);
-            Fader.alpha = bFadeIn
+            fader.alpha = bFadeIn
                 ? 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed)
                 : Mathf.InverseLerp(fDuration - fFadeDuration, fDuration, fElapsed);
             yield return null;
@@ -207,12 +150,11 @@ public class FPSLevel : MonoBehaviour
 
         ArenaElevator.position = vTo;
         Player.Teleport(vTo + vPlayerOffset);
-        Fader.alpha = bFadeIn ? 0.0f : 1.0f;
+        fader.alpha = bFadeIn ? 0.0f : 1.0f;
     }
 
-    IEnumerator ExitRoutine(bool bExtracted)
+    IEnumerator ExitRoutine()
     {
-        bTransitioning = true;
         spawner.StopSpawning();
         Player.SetCanMove(false);
         PromptText.text = "";
@@ -225,9 +167,9 @@ public class FPSLevel : MonoBehaviour
         string sMessage;
         if(bExtracted)
         {
-            StartElevatorSound(ArenaElevator);
+            m_Elevator.StartRideSound(ArenaElevator);
             yield return RideElevator(m_vElevatorRest, m_vElevatorRest + Vector3.up * fRideHeight, fRideUpDuration, false);
-            StopElevatorSound();
+            m_Elevator.StopRideSound();
 
             sMessage = BankHaul();
             if(!string.IsNullOrEmpty(sMessage))
@@ -251,48 +193,15 @@ public class FPSLevel : MonoBehaviour
                 sMessage += "\n" + BankHaul();
             }
 
-            FaderText.text = sMessage;
+            m_Elevator.FaderText.text = sMessage;
             yield return Fade(0.0f, 1.0f);
         }
 
-        FaderText.text = sMessage;
+        m_Elevator.FaderText.text = sMessage;
         if(!string.IsNullOrEmpty(sMessage))
         {
             yield return new WaitForSeconds(fMessageDuration);
         }
-
-        spawner.Clear();
-        ArenaElevator.position = m_vElevatorRest;
-        Player.gameObject.SetActive(false);
-        ArenaLighting.gameObject.SetActive(false);
-        FPSCamera.gameObject.SetActive(false);
-        Brain.enabled = false;
-        Hud.SetActive(false);
-        FaderText.text = "";
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        m_Camera.fieldOfView = m_fBarFieldOfView;
-        m_Camera.nearClipPlane = m_fBarNearClip;
-
-        Transform cameraTransform = m_Camera.transform;
-        cameraTransform.rotation = m_qBarCameraRotation;
-        Vector3 vBottom = m_vBarCameraPosition + Vector3.down * fDescentDistance;
-        StartElevatorSound(BarElevator);
-        for(float fElapsed = 0.0f; fElapsed < fAscentDuration; fElapsed += Time.deltaTime)
-        {
-            float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fAscentDuration);
-            cameraTransform.position = Vector3.Lerp(vBottom, m_vBarCameraPosition, t);
-            Fader.alpha = 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed);
-            yield return null;
-        }
-        cameraTransform.position = m_vBarCameraPosition;
-        Fader.alpha = 0.0f;
-        StopElevatorSound();
-
-        SetBarActive(true);
-        bTransitioning = false;
     }
 
     public void Update()
@@ -312,36 +221,6 @@ public class FPSLevel : MonoBehaviour
         Crosshair.rectTransform.localScale = Vector3.one * (1.0f + m_fCrosshairFlash * (bHeadshotFlash ? 1.5f : 0.6f));
 
         PromptText.text = Player.LookedAtRope != null || Player.HeldRope != null ? "HOLD [E] TO GO UP" : "";
-    }
-
-    void StartElevatorSound(Transform elevator)
-    {
-        SetElevatorSoundSource(elevator);
-        Sfx.StopLoop(m_ElevatorLoop);
-        Sfx.Play(Sfx.Sounds.ElevatorStart, m_ElevatorSound);
-        m_ElevatorLoop = Sfx.PlayLoop(Sfx.Sounds.ElevatorMotor, m_ElevatorSound);
-    }
-
-    void StopElevatorSound()
-    {
-        Sfx.StopLoop(m_ElevatorLoop);
-        m_ElevatorLoop = null;
-        Sfx.Play(Sfx.Sounds.ElevatorArrive, m_ElevatorSound);
-    }
-
-    // Without a bar elevator the sounds sit on the camera, which is the same as playing them 2D.
-    void SetElevatorSoundSource(Transform elevator)
-    {
-        m_ElevatorSoundSource = elevator != null ? elevator : m_Camera.transform;
-        m_ElevatorSound.position = m_ElevatorSoundSource.position;
-    }
-
-    void LateUpdate()
-    {
-        if(m_ElevatorSoundSource != null)
-        {
-            m_ElevatorSound.position = m_ElevatorSoundSource.position;
-        }
     }
 
     void PlayMusic()
@@ -379,12 +258,13 @@ public class FPSLevel : MonoBehaviour
 
     IEnumerator Fade(float fFrom, float fTo)
     {
+        CanvasGroup fader = m_Elevator.Fader;
         for(float t = 0.0f; t < 1.0f; t += Time.deltaTime / fFadeDuration)
         {
-            Fader.alpha = Mathf.Lerp(fFrom, fTo, t);
+            fader.alpha = Mathf.Lerp(fFrom, fTo, t);
             yield return null;
         }
-        Fader.alpha = fTo;
+        fader.alpha = fTo;
     }
 
     string BankHaul()
@@ -436,8 +316,8 @@ public class FPSLevel : MonoBehaviour
             return;
         }
 
+        bExtracted = false;
         bInEncounter = false;
-        StartCoroutine(ExitRoutine(false));
     }
 
     void RefreshHud()
@@ -456,24 +336,5 @@ public class FPSLevel : MonoBehaviour
         Color color = DamageFlash.color;
         color.a = fAlpha;
         DamageFlash.color = color;
-    }
-
-    void SetBarActive(bool bActive)
-    {
-        foreach(Behaviour behaviour in aDisableDuringFPS)
-        {
-            if(behaviour != null)
-            {
-                behaviour.enabled = bActive;
-            }
-        }
-
-        foreach(GameObject go in aHideDuringFPS)
-        {
-            if(go != null)
-            {
-                go.SetActive(bActive);
-            }
-        }
     }
 }

@@ -1,9 +1,9 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ElevatorRope : MonoBehaviour
 {
-    public FPSLevel Level;
-    public bool bDescend = true;
+    public UnityEvent OnPulled;
     public Transform Rope;
     public Transform Handle;
 
@@ -114,14 +114,6 @@ public class ElevatorRope : MonoBehaviour
     void Trigger()
     {
         Sfx.Play(Sfx.Sounds.RopeTrigger, Handle.position);
-
-        if(bDescend)
-        {
-            Level.Enter();
-        }
-        else
-        {
-            Level.Leave();
-        }
+        OnPulled.Invoke();
     }
 }
