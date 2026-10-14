@@ -7,14 +7,11 @@ public class PlayerInteraction : MonoBehaviour
     private const string ServeButtonTag = "ServeButton";
     private const string TutorialTag = "Tutorial";
 
-    [SerializeField] private Player player;
     [SerializeField] private DrinkGlass kitchenGlass;
     [SerializeField] private float interactionDistance = 100f;
 
     void Update()
     {
-        HandleRoomKeys();
-
         if (!Input.GetMouseButtonDown(0))
         {
             return;
@@ -61,18 +58,6 @@ public class PlayerInteraction : MonoBehaviour
             {
                 rope.BeginDrag();
             }
-        }
-    }
-
-    // The kitchen is to the right of the customer area, so A/Left and D/Right slide the camera that way.
-    private void HandleRoomKeys()
-    {
-        bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
-        bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
-
-        if ((left && player.CurrentRoom == Rooms.Kitchen) || (right && player.CurrentRoom == Rooms.MainRoom))
-        {
-            player.ChangeRoom();
         }
     }
 
