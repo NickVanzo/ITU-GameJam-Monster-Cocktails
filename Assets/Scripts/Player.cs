@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
 {
     private Rooms currentRoom;
     public Rooms CurrentRoom => currentRoom;
-    public Transform mainCamera; // Assign your main Camera Transform here
+    public Transform mainCamera;
     public Transform kitchenCameraPosition;
     public Transform customersCameraPosition;
     public float movementSpeed = 10.0f;
@@ -21,29 +21,66 @@ public class Player : MonoBehaviour
 
     private Coroutine transitionCoroutine;
 
-    void Start()
+    // Awake, not Start: the bar keeps this disabled while the camera rises, and a late Start would undo SnapToRoom.
+    void Awake()
     {
-        
-        
-        currentRoom = Rooms.MainRoom;
-        
-        toCustomersButton.SetActive(false);
-        toKitchenButton.SetActive(true);
-        
-        MoveCameraTo(customersCameraPosition);
+#if UNITY_EDITOR
+        foreach (IngredientType type in System.Enum.GetValues(typeof(IngredientType)))
+        {
+            MaterialInventory.Add(type, 999);
+        }
+#endif
+
+        SnapToRoom(Rooms.MainRoom);
+    }
+
+    public void SnapToRoom(Rooms room)
+    {
+        if (transitionCoroutine != null)
+            StopCoroutine(transitionCoroutine);
+
+        currentRoom = room;
+        mainCamera.position = CameraPositionFor(room).position;
+        RefreshRoomButtons();
+    }
+
+    void Update()
+    {
+        HandleRoomKeys();
+    }
+
+    // The kitchen is to the right of the customer area, so A/Left and D/Right slide the camera that way.
+    private void HandleRoomKeys()
+    {
+        bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
+        bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
+
+        if ((left && currentRoom == Rooms.Kitchen) || (right && currentRoom == Rooms.MainRoom))
+        {
+            ChangeRoom();
+        }
     }
 
     public void ChangeRoom()
     {
         currentRoom = (currentRoom == Rooms.MainRoom) ? Rooms.Kitchen : Rooms.MainRoom;
-        Transform target = (currentRoom == Rooms.Kitchen) ? kitchenCameraPosition : customersCameraPosition;
         Sfx.Play(Sfx.Sounds.RoomSwitch);
 
         // Stop any ongoing move coroutine before starting a new one
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
 
-        transitionCoroutine = StartCoroutine(MoveCameraTo(target));
+        transitionCoroutine = StartCoroutine(MoveCameraTo(CameraPositionFor(currentRoom)));
+        RefreshRoomButtons();
+    }
+
+    private Transform CameraPositionFor(Rooms room)
+    {
+        return (room == Rooms.Kitchen) ? kitchenCameraPosition : customersCameraPosition;
+    }
+
+    private void RefreshRoomButtons()
+    {
         toCustomersButton.SetActive(currentRoom == Rooms.Kitchen);
         toKitchenButton.SetActive(currentRoom == Rooms.MainRoom);
     }

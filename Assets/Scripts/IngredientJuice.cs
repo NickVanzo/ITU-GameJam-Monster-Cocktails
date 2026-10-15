@@ -41,7 +41,7 @@ public class IngredientJuice : MonoBehaviour
         meshRenderer.material.color = AppliedColor;
     }
 
-    private Color GetColor(IngredientType ingredientType)
+    public Color GetColor(IngredientType ingredientType)
     {
         foreach (IngredientColor entry in colorsByType)
         {

@@ -6,8 +6,7 @@ using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Todo : kinda cringe, either Level interface and include bar or come up with smth else
-public class FPSLevel : MonoBehaviour
+public class FPSLevel : MonoBehaviour, ILevel
 {
     public Spawner spawner;
     public FPSController Player;
@@ -15,6 +14,8 @@ public class FPSLevel : MonoBehaviour
     public Transform ArenaElevator;
     public Transform PlayerSpawn;
     public CinemachineCamera FPSCamera;
+    [Tooltip("Has the CinemachineBrain and audio listener, the bar turns its own camera off before this level plays.")]
+    public Camera ArenaCamera;
 
     [Header("UI")]
     public GameObject Hud;
@@ -42,7 +43,7 @@ public class FPSLevel : MonoBehaviour
     readonly Dictionary<IngredientType, int> m_Haul = new();
     bool bInEncounter = false;
     bool bExtracted = false;
-    Elevator m_Elevator;
+    LevelLoader m_Elevator;
     Vector3 m_vElevatorRest;
     float m_fCrosshairFlash;
     bool bHeadshotFlash;
@@ -53,6 +54,7 @@ public class FPSLevel : MonoBehaviour
     {
         m_vElevatorRest = ArenaElevator.position;
 
+        ArenaCamera.gameObject.SetActive(false);
         FPSCamera.gameObject.SetActive(false);
         Player.gameObject.SetActive(false);
         ArenaLighting.gameObject.SetActive(false);
@@ -82,7 +84,7 @@ public class FPSLevel : MonoBehaviour
         Player.OnHitEnemy -= HandleHitEnemy;
     }
 
-    public IEnumerator Play(Elevator elevator)
+    public IEnumerator Play(LevelLoader elevator)
     {
         m_Elevator = elevator;
 
@@ -120,6 +122,7 @@ public class FPSLevel : MonoBehaviour
         Player.Spawn(PlayerSpawn.position, PlayerSpawn.rotation);
         ArenaLighting.gameObject.SetActive(true);
         Player.gameObject.SetActive(true);
+        ArenaCamera.gameObject.SetActive(true);
         FPSCamera.gameObject.SetActive(true);
         Hud.SetActive(true);
         PromptText.text = "";
