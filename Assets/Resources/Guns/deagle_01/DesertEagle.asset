@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa1a493203072f243933f3a717916a11, type: 3}
+  m_Name: DesertEagle
+  m_EditorClassIdentifier: Assembly-CSharp::GunObject
+  sId: deagle_01
+  sDisplayName: Desert Eagle
+  aSlots: []
+  Trigger:
+    rid: 6184553153461223491
+  aConstraints:
+  - rid: 6184553153461223492
+  Spawner:
+    rid: 6184553153461223493
+  Shot:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  DryFire:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  Reload:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 6184553153461223491
+      type: {class: SingleShotTrigger, ns: , asm: Assembly-CSharp}
+      data:
+        fRoundsPerMinute: 120
+    - rid: 6184553153461223492
+      type: {class: AmmoConstraint, ns: , asm: Assembly-CSharp}
+      data:
+        nBaseCapacity: 7
+        fBaseReloadTime: 1.4
+    - rid: 6184553153461223493
+      type: {class: HitscanSpawner, ns: , asm: Assembly-CSharp}
+      data:
+        nBaseDamage: 1
+        fBaseRange: 100
+        vBaseSpread: {x: 0, y: 0.25}
+        fBaseHeatRate: 0.15

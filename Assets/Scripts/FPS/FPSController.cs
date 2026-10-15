@@ -1,3 +1,4 @@
+using System;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -74,6 +75,7 @@ public class FPSController : IDamageable
     InputAction MoveAction;
     InputAction LookAction;
     InputAction AttackAction;
+    InputAction ReloadAction;
     InputAction SprintAction;
     InputAction InteractAction;
     InputAction ZoomAction;
@@ -81,6 +83,10 @@ public class FPSController : IDamageable
     public bool CanMove => bCanMove;
     public ElevatorRope LookedAtRope { get; private set; }
     public ElevatorRope HeldRope { get; private set; }
+
+    [SerializeField] 
+    GunObject GunDefinition;
+    private Gun m_Gun;
 
     protected override void Awake()
     {
@@ -102,9 +108,15 @@ public class FPSController : IDamageable
         MoveAction = actions.FindAction("Player/Move", true);
         LookAction = actions.FindAction("Player/Look", true);
         AttackAction = actions.FindAction("Player/Attack", true);
+        ReloadAction = actions.FindAction("Player/Reload", true);
         SprintAction = actions.FindAction("Player/Sprint", true);
         InteractAction = actions.FindAction("Player/Interact", true);
         ZoomAction = actions.FindAction("Player/Zoom", true);
+
+        m_Gun = global::Gun.Build(GunDefinition, null);
+        m_Gun.OnFired += HandleGunFired;
+        m_Gun.OnHit += HandleGunHit;
+        m_Gun.OnBlocked += m_Gun.Reload;   // pulling the trigger w/ empty mag reloads 
     }
 
     void OnEnable()
@@ -113,6 +125,7 @@ public class FPSController : IDamageable
         MoveAction.Enable();
         LookAction.Enable();
         AttackAction.Enable();
+        ReloadAction.Enable();
         SprintAction.Enable();
         InteractAction.Enable();
         ZoomAction.Enable();
@@ -160,14 +173,14 @@ public class FPSController : IDamageable
         {
             LookedAtRope = null;
             HeldRope = null;
-            UpdateGun();
+            HandleShooting(false);
             return;
         }
 
         HandleLook();
         HandleMovement();
         HandleInteraction();
-        HandleShooting();
+        HandleShooting(true);
         UpdateGun();
     }
 
@@ -259,18 +272,14 @@ public class FPSController : IDamageable
         }
     }
 
-    public void HandleShooting()
+
+    void HandleGunFired()
     {
-        if(!AttackAction.IsPressed() || Time.time < m_fFireTimestamp)
-        {
-            return;
-        }
-
-        m_fFireTimestamp = Time.time + fFireCooldown;
-        m_fPitch -= fRecoil;
+        m_fPitch -= m_Gun.Stats.Get(GunStat.Recoil, GunDefinition.fBaseRecoil);
         m_fGunKick = 1.0f;
-        Sfx.Play(Sfx.Sounds.GunShot);
 
+        Sfx.Play(Sfx.Sounds.GunShot);
+        
         if(ImpulseSource != null)
         {
             ImpulseSource.GenerateImpulseWithVelocity(new Vector3(0.0f, 0.0f, -0.06f));
@@ -280,23 +289,72 @@ public class FPSController : IDamageable
         {
             MuzzleFlash.Play();
         }
+    }
 
-        if(!Physics.Raycast(CameraRoot.position, CameraRoot.forward, out RaycastHit hit, fRange, HitMask, QueryTriggerInteraction.Ignore))
+    void HandleGunHit(GunHit hit)
+    {
+        if(hit.Target == null)
         {
+            Sfx.Play(Sfx.Sounds.BulletImpact, hit.vPoint);
             return;
         }
 
-        IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
-        if(target == null || target == this || !target.IsAlive())
+        Sfx.Play(hit.bHeadshot ? Sfx.Sounds.HeadshotMarker : Sfx.Sounds.HitMarker);
+        OnHitEnemy?.Invoke(hit.bHeadshot);
+    }
+
+    public void HandleShooting(bool bCanShoot)
+    {
+        
+        if(bCanShoot && ReloadAction.WasPressedThisFrame())
         {
-            Sfx.Play(Sfx.Sounds.BulletImpact, hit.point);
-            return;
+            m_Gun.Reload();
         }
 
-        bool bHeadshot = hit.collider.CompareTag(HeadTag);
-        target.TakeDamage(bHeadshot ? target.Max : nDamage);
-        Sfx.Play(bHeadshot ? Sfx.Sounds.HeadshotMarker : Sfx.Sounds.HitMarker);
-        OnHitEnemy?.Invoke(bHeadshot);
+        
+        GunTrigger.TriggerInput input = new()
+        {
+            bHeld = bCanShoot && AttackAction.IsPressed(),
+            bPressed = bCanShoot && AttackAction.WasPressedThisFrame(),
+        };
+        
+        ShooterState shooter = new()
+        {
+            vPos = CameraRoot.position,
+            vAim = CameraRoot.forward,
+            HitMask = HitMask,
+            Owner = this,
+        };
+
+        m_Gun.Tick(shooter, input, Time.deltaTime);
+
+        // if(!AttackAction.IsPressed() || Time.time < m_fFireTimestamp)
+        // {
+        //     return;
+        // }
+
+        // m_fFireTimestamp = Time.time + fFireCooldown;
+        // m_fPitch -= fRecoil;
+        // m_fGunKick = 1.0f;
+        // Sfx.Play(Sfx.Sounds.GunShot);
+
+
+        // if(!Physics.Raycast(CameraRoot.position, CameraRoot.forward, out RaycastHit hit, fRange, HitMask, QueryTriggerInteraction.Ignore))
+        // {
+        //     return;
+        // }
+
+        // IDamageable target = hit.collider.GetComponentInParent<IDamageable>();
+        // if(target == null || target == this || !target.IsAlive())
+        // {
+        //     Sfx.Play(Sfx.Sounds.BulletImpact, hit.point);
+        //     return;
+        // }
+
+        // bool bHeadshot = hit.collider.CompareTag(HeadTag);
+        // target.TakeDamage(bHeadshot ? target.Max : nDamage);
+        // Sfx.Play(bHeadshot ? Sfx.Sounds.HeadshotMarker : Sfx.Sounds.HitMarker);
+        // OnHitEnemy?.Invoke(bHeadshot);
     }
 
     void ResetZoom()
@@ -366,7 +424,7 @@ public class FPSController : IDamageable
     {
         if(ImpulseSource != null)
         {
-            ImpulseSource.GenerateImpulseWithVelocity(Random.insideUnitSphere * 0.3f);
+            ImpulseSource.GenerateImpulseWithVelocity(UnityEngine.Random.insideUnitSphere * 0.3f);
         }
 
         if(IsAlive())
