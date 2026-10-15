@@ -5,35 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a3129551-ce2c-411c-ab30-f1926985b011" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/Materials/Posters/Poster 8.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/Posters/Poster 8.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Materials/images.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Materials/images.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Brain (1)/Brain.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Brain (1)/Brain.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/BulletPiles/Material.001.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/BulletPiles/Material.001.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Cash Sack Ripped/20_dollar.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Cash Sack Ripped/20_dollar.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Cash Sack Ripped/binbag.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Cash Sack Ripped/binbag.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Cash Sack Ripped/cash_pile.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Cash Sack Ripped/cash_pile.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Crates&amp;Mines/Material.001.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Crates&amp;Mines/Material.001.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Crates&amp;Mines/Material.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Crates&amp;Mines/Material.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Gun/source/Magazine.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Gun/source/Magazine.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Gun/source/MainBody.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Gun/source/MainBody.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/Gun/source/Slide.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/Gun/source/Slide.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/bottles/source/02 - Default.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/bottles/source/02 - Default.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/field-mouse/source/Mouse.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/field-mouse/source/Mouse.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/m9-bayonet-knife/source/M9 1.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/m9-bayonet-knife/source/M9 1.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/rifle-locker/source/M_RLK4.Mesh.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/rifle-locker/source/M_RLK4.Mesh.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/rifle-locker/source/M_RLK4.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/rifle-locker/source/M_RLK4.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Models/syringe/source/syringe.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Models/syringe/source/syringe.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Rendering/ElevatorMetal.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Rendering/ElevatorMetal.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Rendering/ElevatorRope.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Rendering/ElevatorRope.mat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Rendering/Materials/DefaultWhiteSurface.mat" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Rendering/Materials/DefaultWhiteSurface.mat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ITU-GameJam-Monster-Cocktails/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ITU-GameJam-Monster-Cocktails/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Game.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Game.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Levels/Arena.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Levels/Arena.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/FPS/Elevator.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/FPS/Elevator.cs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/FPS/FPSLevel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/FPS/FPSLevel.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Levels/Bar.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Levels/Bar.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Customer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Customer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/CustomerManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/CustomerManager.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/DialogueChoiceUI.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/DialogueChoiceUI.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/DrinkGlass.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/DrinkGlass.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/FPS/LevelLoader.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/FPS/LevelLoader.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/IngredientJuice.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/IngredientJuice.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Player.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Player.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/PlayerInteraction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/PlayerInteraction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,6 +31,8 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FPS/FPSLevel.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FPS/Interface/ILevel.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/FPS/LevelLoader.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Ingredient.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Player.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="ProjectColorInfo">{
@@ -82,7 +65,7 @@
       <option name="presentableId" value="Default" />
       <updated>1791921119207</updated>
       <workItem from="1791921122017" duration="1328000" />
-      <workItem from="1791986643189" duration="1658000" />
+      <workItem from="1791986643189" duration="3255000" />
     </task>
     <servers />
   </component>

@@ -18,11 +18,17 @@ public class CustomerManager : MonoBehaviour
     [SerializeField] private GameObject gameOverCanvas;
     [SerializeField] private PlayerInteraction playerInteraction;
 
-    private int customersServed = 0;
-
     void Awake()
     {
         Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     void Start()
@@ -50,6 +56,15 @@ public class CustomerManager : MonoBehaviour
         }
     }
 
+    // Moves the queue on to the next customer. The finished one can still walk out, but won't come back after a trip.
+    public void CompleteCurrentCustomer()
+    {
+        BarState bar = GameState.Bar;
+        bar.nCustomer++;
+        bar.State = CustomerState.Arriving;
+        bar.aChoices.Clear();
+    }
+
     public Transform[] GetWaypoint()
     {
         return waypoints;
@@ -66,9 +81,11 @@ public class CustomerManager : MonoBehaviour
         SpawnNextCustomer();
     }
 
+    // Spawns the customer GameState says is being served, so a customer left mid-order comes back after a trip.
     private void SpawnNextCustomer()
     {
-        if (customerPrefabs.Count == 0 || customersServed >= customerPrefabs.Count)
+        BarState bar = GameState.Bar;
+        if (customerPrefabs.Count == 0 || bar.nCustomer >= customerPrefabs.Count)
         {
             Debug.Log("no more customers for the day");
             gameOverCanvas.SetActive(true);
@@ -76,9 +93,11 @@ public class CustomerManager : MonoBehaviour
             return;
         }
         
-        GameObject prefab = customerPrefabs[customersServed];
+        GameObject prefab = customerPrefabs[bar.nCustomer];
         Instantiate(prefab, waypoints[0].position, waypoints[0].rotation);
-        Sfx.Play(Sfx.Sounds.CustomerArrive);
-        customersServed++;
+        if (bar.State == CustomerState.Arriving)
+        {
+            Sfx.Play(Sfx.Sounds.CustomerArrive);
+        }
     }
 }

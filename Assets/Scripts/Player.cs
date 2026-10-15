@@ -10,7 +10,7 @@ public class Player : MonoBehaviour
 {
     private Rooms currentRoom;
     public Rooms CurrentRoom => currentRoom;
-    public Transform mainCamera; // Assign your main Camera Transform here
+    public Transform mainCamera;
     public Transform kitchenCameraPosition;
     public Transform customersCameraPosition;
     public float movementSpeed = 10.0f;
@@ -24,10 +24,16 @@ public class Player : MonoBehaviour
     // Awake, not Start: the bar keeps this disabled while the camera rises, and a late Start would undo SnapToRoom.
     void Awake()
     {
+#if UNITY_EDITOR
+        foreach (IngredientType type in System.Enum.GetValues(typeof(IngredientType)))
+        {
+            MaterialInventory.Add(type, 999);
+        }
+#endif
+
         SnapToRoom(Rooms.MainRoom);
     }
 
-    // Puts the camera straight into a room, without the slide or the sound.
     public void SnapToRoom(Rooms room)
     {
         if (transitionCoroutine != null)

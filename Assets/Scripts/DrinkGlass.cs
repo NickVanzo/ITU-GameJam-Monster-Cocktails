@@ -8,13 +8,28 @@ public class DrinkGlass : MonoBehaviour
     [SerializeField] private Renderer waterRenderer;
 
     private readonly List<GameObject> fallingJuices = new();
-    private readonly List<IngredientType> containedIngredients = new();
 
     private Color baseWaterColor;
+
+    // Kept in GameState so the drink survives the bar unloading while the player is in another level.
+    private static List<IngredientType> ContainedIngredients => GameState.Bar.aGlass;
 
     void Awake()
     {
         baseWaterColor = waterRenderer.material.color;
+        RestoreWaterColor();
+    }
+
+    // Replays the pours in order, so the water ends up the same color it was before the bar unloaded.
+    private void RestoreWaterColor()
+    {
+        IngredientJuice juice = juicePrefab.GetComponent<IngredientJuice>();
+        Color color = baseWaterColor;
+        for (int i = 0; i < ContainedIngredients.Count; i++)
+        {
+            color = MixWater(color, juice.GetColor(ContainedIngredients[i]), i + 1);
+        }
+        waterRenderer.material.color = color;
     }
 
     public void AddIngredient(IngredientType type)
@@ -29,7 +44,7 @@ public class DrinkGlass : MonoBehaviour
     public void NotifyIngredientLanded(IngredientType type, Color ingredientColor, GameObject juiceInstance)
     {
         fallingJuices.Remove(juiceInstance);
-        containedIngredients.Add(type);
+        ContainedIngredients.Add(type);
         TintWater(ingredientColor);
         Sfx.Play(Sfx.Sounds.IngredientSplash, transform.position);
         Destroy(juiceInstance);
@@ -43,19 +58,23 @@ public class DrinkGlass : MonoBehaviour
         }
 
         fallingJuices.Clear();
-        containedIngredients.Clear();
+        ContainedIngredients.Clear();
         waterRenderer.material.color = baseWaterColor;
     }
 
     private void TintWater(Color ingredientColor)
     {
-        Color currentColor = waterRenderer.material.color;
-        float mixWeight = 1f / containedIngredients.Count;
-        waterRenderer.material.color = Color.Lerp(currentColor, ingredientColor, mixWeight);
+        waterRenderer.material.color = MixWater(waterRenderer.material.color, ingredientColor, ContainedIngredients.Count);
+    }
+
+    // Each ingredient weighs as much as all the ones before it combined, so the mix stays an even blend.
+    private static Color MixWater(Color currentColor, Color ingredientColor, int ingredientCount)
+    {
+        return Color.Lerp(currentColor, ingredientColor, 1f / ingredientCount);
     }
 
     public List<IngredientType> GetIngredientTypes()
     {
-        return new List<IngredientType>(containedIngredients);
+        return new List<IngredientType>(ContainedIngredients);
     }
 }

@@ -24,6 +24,14 @@ public class DialogueChoiceUI : MonoBehaviour
         Hide();
     }
 
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+    }
+
     public void Show(string[] optionTexts, UnityEngine.Events.UnityAction[] onChoiceSelected)
     {
         choice1Button.onClick.RemoveAllListeners();

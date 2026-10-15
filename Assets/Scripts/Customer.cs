@@ -43,13 +43,66 @@ public class Customer : MonoBehaviour
     private Dialogue currentDialogue;
     private float footstepDistance;
 
+    // Picks up where GameState left off, so a customer served before a trip to another level resumes there.
     void Start()
     {
         waypoints = CustomerManager.Instance.GetWaypoint();
-        transform.position = waypoints[0].position;
-        state = State.MovingToCounter;
-        agent.SetDestination(waypoints[1].position);
         dialogueCanvas.SetActive(false);
+
+        BarState bar = GameState.Bar;
+        switch (bar.State)
+        {
+            case CustomerState.Arriving:
+                transform.position = waypoints[0].position;
+                state = State.MovingToCounter;
+                agent.SetDestination(waypoints[1].position);
+                break;
+            case CustomerState.WaitingForDrink:
+                PlaceAtCounter();
+                ArriveAtCounter();
+                break;
+            case CustomerState.InDialogue:
+                PlaceAtCounter();
+                ResumeDialogue(bar.aChoices);
+                break;
+        }
+    }
+
+    // Faces the way it would after walking in from the spawn point.
+    private void PlaceAtCounter()
+    {
+        agent.Warp(waypoints[1].position);
+        Vector3 walkDirection = Vector3.ProjectOnPlane(waypoints[1].position - waypoints[0].position, Vector3.up);
+        if (walkDirection.sqrMagnitude > 0.0001f)
+        {
+            transform.rotation = Quaternion.LookRotation(walkDirection);
+        }
+    }
+
+    private void ArriveAtCounter()
+    {
+        state = State.WaitingForDrink;
+        GameState.Bar.State = CustomerState.WaitingForDrink;
+        Speak(requestLine);
+        CustomerManager.Instance.RegisterActiveCustomer(this);
+    }
+
+    private void ResumeDialogue(List<int> choices)
+    {
+        currentDialogue = startingDialogue;
+        foreach (int choice in choices)
+        {
+            Dialogue[] next = currentDialogue.nextDialogue;
+            if (next == null || choice >= next.Length || next[choice] == null)
+            {
+                Debug.LogError($"Customer '{name}': saved dialogue choice {choice} doesn't exist after '{currentDialogue.name}'. Were the dialogue assets changed? Resuming from '{currentDialogue.name}'.", this);
+                break;
+            }
+            currentDialogue = next[choice];
+        }
+
+        state = State.InDialogue;
+        ShowCurrentDialogue();
     }
 
     void Update()
@@ -69,9 +122,7 @@ public class Customer : MonoBehaviour
         switch (state)
         {
             case State.MovingToCounter:
-                state = State.WaitingForDrink;
-                Speak(requestLine);
-                CustomerManager.Instance.RegisterActiveCustomer(this);
+                ArriveAtCounter();
                 break;
             case State.MovingToExit:
                 state = State.MovingToDespawn;
@@ -95,6 +146,8 @@ public class Customer : MonoBehaviour
 
         if (IsCorrectDrink(servedIngredients))
         {
+            GameState.Bar.State = CustomerState.InDialogue;
+            GameState.Bar.aChoices.Clear();
             Sfx.Play(Sfx.Sounds.CustomerHappy, transform.position);
             Speak(satisfiedLine);
             StartCoroutine(BeginDialogueAfterDelay());
@@ -191,6 +244,7 @@ public class Customer : MonoBehaviour
 
         if (next != null)
         {
+            GameState.Bar.aChoices.Add(choiceIndex);
             currentDialogue = next;
             ShowCurrentDialogue();
         }
@@ -207,7 +261,8 @@ public class Customer : MonoBehaviour
 
     private IEnumerator EndDialogueAfterDelay()
     {
-        
+        // Done as soon as the conversation ends: leaving the bar now brings the next customer, not this one.
+        CustomerManager.Instance.CompleteCurrentCustomer();
 
         yield return new WaitForSeconds(dialogueEndDelaySeconds);
     
