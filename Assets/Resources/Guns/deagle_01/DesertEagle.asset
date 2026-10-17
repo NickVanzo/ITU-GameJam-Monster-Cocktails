@@ -13,8 +13,20 @@ MonoBehaviour:
   m_Name: DesertEagle
   m_EditorClassIdentifier: Assembly-CSharp::GunObject
   sId: deagle_01
-  sDisplayName: Desert Eagle
-  aSlots: []
+  sDisplayName: GIULETTA
+  DisplayModel: {fileID: 0}
+  fBaseRecoil: 0.8
+  aSlots:
+  - eSlot: 1
+    Default: {fileID: 0}
+    bRequired: 0
+    aOptions:
+    - {fileID: 11400000, guid: a3c5a2837bccf2c41a09ea4a9a934de0, type: 2}
+  - eSlot: 0
+    Default: {fileID: 0}
+    bRequired: 0
+    aOptions:
+    - {fileID: 11400000, guid: 7759a80e35f7a9a4aabf644e16812426, type: 2}
   Trigger:
     rid: 6184553153461223491
   aConstraints:
@@ -51,7 +63,7 @@ MonoBehaviour:
     - rid: 6184553153461223491
       type: {class: SingleShotTrigger, ns: , asm: Assembly-CSharp}
       data:
-        fRoundsPerMinute: 120
+        fRoundsPerMinute: 350
     - rid: 6184553153461223492
       type: {class: AmmoConstraint, ns: , asm: Assembly-CSharp}
       data:

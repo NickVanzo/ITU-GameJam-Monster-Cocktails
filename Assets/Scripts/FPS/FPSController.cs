@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -31,10 +32,6 @@ public class FPSController : IDamageable
     [SerializeField] float fMaxPitch = 85.0f;
 
     [Header("Shooting")]
-    [SerializeField] int nDamage = 1;
-    [SerializeField] float fFireCooldown = 0.12f;
-    [SerializeField] float fRange = 100.0f;
-    [SerializeField] float fRecoil = 0.8f;
     [SerializeField] LayerMask HitMask = ~0;
 
     [Header("Zoom")]
@@ -84,9 +81,15 @@ public class FPSController : IDamageable
     public ElevatorRope LookedAtRope { get; private set; }
     public ElevatorRope HeldRope { get; private set; }
 
-    [SerializeField] 
+    [Tooltip("Used when no gun was picked in the bar's armory, e.g. when playing this level on its own.")]
+    [SerializeField]
     GunObject GunDefinition;
+    GunObject m_GunFrame;
     private Gun m_Gun;
+    string m_sLastHit;
+    float m_fLastHitTime;
+
+    public Gun EquippedGun => m_Gun;
 
     protected override void Awake()
     {
@@ -113,7 +116,14 @@ public class FPSController : IDamageable
         InteractAction = actions.FindAction("Player/Interact", true);
         ZoomAction = actions.FindAction("Player/Zoom", true);
 
-        m_Gun = global::Gun.Build(GunDefinition, null);
+        m_GunFrame = Loadout.Frame != null ? Loadout.Frame : GunDefinition;
+        if(m_GunFrame == null)
+        {
+            Debug.LogError("FPSController: no gun picked in the armory and no GunDefinition assigned, the player can't shoot.", this);
+            return;
+        }
+
+        m_Gun = Loadout.Build(m_GunFrame);
         m_Gun.OnFired += HandleGunFired;
         m_Gun.OnHit += HandleGunHit;
         m_Gun.OnBlocked += m_Gun.Reload;   // pulling the trigger w/ empty mag reloads 
@@ -275,7 +285,7 @@ public class FPSController : IDamageable
 
     void HandleGunFired()
     {
-        m_fPitch -= m_Gun.Stats.Get(GunStat.Recoil, GunDefinition.fBaseRecoil);
+        m_fPitch -= m_Gun.Stats.Get(GunStat.Recoil, m_GunFrame.fBaseRecoil);
         m_fGunKick = 1.0f;
 
         Sfx.Play(Sfx.Sounds.GunShot);
@@ -293,19 +303,48 @@ public class FPSController : IDamageable
 
     void HandleGunHit(GunHit hit)
     {
+        m_fLastHitTime = Time.time;
+
         if(hit.Target == null)
         {
+            m_sLastHit = "NO TARGET";
             Sfx.Play(Sfx.Sounds.BulletImpact, hit.vPoint);
             return;
         }
+
+        // Runs after the damage is dealt, so this is the health left.
+        string sName = hit.Target is EnemyBehavior enemy && enemy.Monster != null ? enemy.Monster.sName : hit.Target.name;
+        m_sLastHit = $"{sName.ToUpper()}{(hit.bHeadshot ? " HEADSHOT" : "")}  HP {hit.Target.Current}/{hit.Target.Max}";
 
         Sfx.Play(hit.bHeadshot ? Sfx.Sounds.HeadshotMarker : Sfx.Sounds.HitMarker);
         OnHitEnemy?.Invoke(hit.bHeadshot);
     }
 
+    // Gun name, the state of each of its parts and what the last bullet hit.
+    public string DebugPrintGun()
+    {
+        if(m_Gun == null)
+        {
+            return "NO GUN";
+        }
+
+        var builder = new StringBuilder(m_GunFrame.sDisplayName.ToUpper());
+        builder.Append('\n').Append(m_Gun.DebugPrint());
+        if(m_sLastHit != null)
+        {
+            builder.Append($"\nLAST HIT {m_sLastHit}  ({Time.time - m_fLastHitTime:0.0}s ago)");
+        }
+
+        return builder.ToString();
+    }
+
     public void HandleShooting(bool bCanShoot)
     {
-        
+        if(m_Gun == null)
+        {
+            return;
+        }
+
         if(bCanShoot && ReloadAction.WasPressedThisFrame())
         {
             m_Gun.Reload();

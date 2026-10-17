@@ -1,0 +1,78 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa1a493203072f243933f3a717916a11, type: 3}
+  m_Name: Romeo
+  m_EditorClassIdentifier: Assembly-CSharp::GunObject
+  sId: romeo_01
+  sDisplayName: ROMEO
+  DisplayModel: {fileID: 4544201355139655501, guid: 30042cc20c5e45b48adff3d53c709881, type: 3}
+  fBaseRecoil: 0.8
+  aSlots:
+  - eSlot: 1
+    Default: {fileID: 0}
+    bRequired: 0
+    aOptions:
+    - {fileID: 11400000, guid: a3c5a2837bccf2c41a09ea4a9a934de0, type: 2}
+  - eSlot: 0
+    Default: {fileID: 0}
+    bRequired: 0
+    aOptions:
+    - {fileID: 11400000, guid: 7759a80e35f7a9a4aabf644e16812426, type: 2}
+  Trigger:
+    rid: 6184553153461223491
+  aConstraints:
+  - rid: 6184553153461223492
+  Spawner:
+    rid: 6184553153461223493
+  Shot:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  DryFire:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  Reload:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 6184553153461223491
+      type: {class: SingleShotTrigger, ns: , asm: Assembly-CSharp}
+      data:
+        fRoundsPerMinute: 350
+    - rid: 6184553153461223492
+      type: {class: AmmoConstraint, ns: , asm: Assembly-CSharp}
+      data:
+        nBaseCapacity: 7
+        fBaseReloadTime: 1.4
+    - rid: 6184553153461223493
+      type: {class: HitscanSpawner, ns: , asm: Assembly-CSharp}
+      data:
+        nBaseDamage: 1
+        fBaseRange: 100
+        vBaseSpread: {x: 0, y: 0.25}
+        fBaseHeatRate: 0.15

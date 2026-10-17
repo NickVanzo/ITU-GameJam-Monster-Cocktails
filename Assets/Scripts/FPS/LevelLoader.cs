@@ -30,7 +30,8 @@ public class LevelLoader : MonoBehaviour
     void Awake()
     {
         MaterialInventory.Clear();
-        GameState.Reset();
+        BarGameState.Reset();
+        Loadout.Clear();
 
         // Black until the bar fades itself in.
         Fader.alpha = 1.0f;

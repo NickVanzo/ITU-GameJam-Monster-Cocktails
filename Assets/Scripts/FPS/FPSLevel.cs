@@ -23,6 +23,11 @@ public class FPSLevel : MonoBehaviour, ILevel
     public TMP_Text PromptText;
     public Image Crosshair;
     public Image DamageFlash;
+    [Tooltip("Left empty, a copy of HudText is put in the bottom right corner.")]
+    public TMP_Text AmmoText;
+    [Tooltip("Gun state for debugging. Left empty, a copy of HudText is put in the bottom right corner, above the ammo.")]
+    public TMP_Text GunDebugText;
+    [SerializeField] bool bShowGunDebug = true;
 
     [Header("Elevator")]
     [SerializeField] float fRideDownDuration = 1.8f;
@@ -53,6 +58,17 @@ public class FPSLevel : MonoBehaviour, ILevel
     void Awake()
     {
         m_vElevatorRest = ArenaElevator.position;
+
+        if(AmmoText == null)
+        {
+            AmmoText = CreateCornerText("AmmoText", 56.0f, 40.0f);
+        }
+
+        if(GunDebugText == null)
+        {
+            GunDebugText = CreateCornerText("GunDebugText", 22.0f, 120.0f);
+            GunDebugText.color = new Color(1.0f, 1.0f, 1.0f, 0.7f);
+        }
 
         ArenaCamera.gameObject.SetActive(false);
         FPSCamera.gameObject.SetActive(false);
@@ -133,6 +149,7 @@ public class FPSLevel : MonoBehaviour, ILevel
 
         PlayMusic();
         RefreshHud();
+        RefreshGunHud();
     }
 
     IEnumerator RideElevator(Vector3 vFrom, Vector3 vTo, float fDuration, bool bFadeIn)
@@ -224,6 +241,7 @@ public class FPSLevel : MonoBehaviour, ILevel
         Crosshair.rectTransform.localScale = Vector3.one * (1.0f + m_fCrosshairFlash * (bHeadshotFlash ? 1.5f : 0.6f));
 
         PromptText.text = Player.LookedAtRope != null || Player.HeldRope != null ? "HOLD [E] TO GO UP" : "";
+        RefreshGunHud();
     }
 
     void PlayMusic()
@@ -332,6 +350,36 @@ public class FPSLevel : MonoBehaviour, ILevel
         }
 
         HudText.text = builder.ToString();
+    }
+
+    void RefreshGunHud()
+    {
+        AmmoConstraint ammo = Player.EquippedGun?.GetConstraint<AmmoConstraint>();
+        if(ammo != null)
+        {
+            AmmoText.SetText("{0} / {1}", ammo.Rounds, ammo.Capacity);
+        }
+        else
+        {
+            AmmoText.text = "";
+        }
+
+        GunDebugText.text = bShowGunDebug ? Player.DebugPrintGun() : "";
+    }
+    
+    TMP_Text CreateCornerText(string sName, float fFontSize, float fBottom)
+    {
+        TMP_Text text = Instantiate(HudText, HudText.transform.parent);
+        text.name = sName;
+        text.text = "";
+        text.fontSize = fFontSize;
+        text.alignment = TextAlignmentOptions.BottomRight;
+
+        RectTransform rect = text.rectTransform;
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1.0f, 0.0f);
+        rect.anchoredPosition = new Vector2(-40.0f, fBottom);
+        rect.sizeDelta = new Vector2(900.0f, 400.0f);
+        return text;
     }
 
     void SetFlashAlpha(float fAlpha)
