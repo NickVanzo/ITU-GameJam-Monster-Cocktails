@@ -258,7 +258,7 @@ MonoBehaviour:
   fNoiseFrequency: 1
   fTiltAngle: -45
   fTiltFrequency: 3
-  fTiltDamping: 0.475
+  fTiltDamping: 0.55
   fMoveThreshold: 1
   Zoom:
     fMagnification: 1.8

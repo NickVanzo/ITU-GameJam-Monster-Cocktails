@@ -29252,6 +29252,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BarPlayer
       objectReference: {fileID: 0}
+    - target: {fileID: 4881122839232273663, guid: f5b038f82537fc445abf0d37438d0f20, type: 3}
+      propertyPath: fTiltDamping
+      value: 0.55
+      objectReference: {fileID: 0}
     - target: {fileID: 7049767426289820392, guid: f5b038f82537fc445abf0d37438d0f20, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
