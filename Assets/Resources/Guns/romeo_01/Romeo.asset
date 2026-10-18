@@ -14,8 +14,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GunObject
   sId: romeo_01
   sDisplayName: ROMEO
+  ViewModel: {fileID: 4544201355139655501, guid: 8e280d5bc43d6ea4bb0d666171528a0e, type: 3}
+  vHandOffset: {x: 0, y: -0.193, z: 0.097}
+  vHandRotation: {x: 0, y: 0, z: 0}
+  EquipAction: {fileID: 0}
+  eOffhandButton: 1
+  fDrawTime: 0.15
+  fLowerDistance: 0.35
+  DrawSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  HolsterSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
   DisplayModel: {fileID: 4544201355139655501, guid: 30042cc20c5e45b48adff3d53c709881, type: 3}
-  fBaseRecoil: 0.8
+  fBaseRecoil: 1.25
   aSlots:
   - eSlot: 1
     Default: {fileID: 0}
@@ -57,13 +80,41 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
+  ReloadSpinCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  nReloadSpinTurns: 8
+  vReloadSpinAxis: {x: 1, y: -1, z: 0}
+  vReloadSpinPivot: {x: 0.15, y: 0, z: 0}
+  fReloadSpinYaw: 0
   references:
     version: 2
     RefIds:
     - rid: 6184553153461223491
       type: {class: SingleShotTrigger, ns: , asm: Assembly-CSharp}
       data:
-        fRoundsPerMinute: 350
+        fRoundsPerMinute: 200
     - rid: 6184553153461223492
       type: {class: AmmoConstraint, ns: , asm: Assembly-CSharp}
       data:
@@ -72,7 +123,7 @@ MonoBehaviour:
     - rid: 6184553153461223493
       type: {class: HitscanSpawner, ns: , asm: Assembly-CSharp}
       data:
-        nBaseDamage: 1
-        fBaseRange: 100
+        nBaseDamage: 3
+        fBaseRange: 80
         vBaseSpread: {x: 0, y: 0.25}
         fBaseHeatRate: 0.15

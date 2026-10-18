@@ -25,6 +25,8 @@ public class FPSLevel : MonoBehaviour, ILevel
     public Image DamageFlash;
     [Tooltip("Left empty, a copy of HudText is put in the bottom right corner.")]
     public TMP_Text AmmoText;
+    public TMP_Text OffhandAmmoText;
+    public TMP_Text QuickBarText;
     [Tooltip("Gun state for debugging. Left empty, a copy of HudText is put in the bottom right corner, above the ammo.")]
     public TMP_Text GunDebugText;
     [SerializeField] bool bShowGunDebug = true;
@@ -59,14 +61,25 @@ public class FPSLevel : MonoBehaviour, ILevel
     {
         m_vElevatorRest = ArenaElevator.position;
 
+        // Todo : author this
         if(AmmoText == null)
         {
-            AmmoText = CreateCornerText("AmmoText", 56.0f, 40.0f);
+            AmmoText = CreateHudText("AmmoText", 56.0f, 40.0f);
+        }
+
+        if(OffhandAmmoText == null)
+        {
+            OffhandAmmoText = CreateHudText("OffhandAmmoText", 56.0f, 40.0f, 0.0f);
+        }
+
+        if(QuickBarText == null)
+        {
+            QuickBarText = CreateHudText("QuickBarText", 26.0f, 40.0f, 0.5f);
         }
 
         if(GunDebugText == null)
         {
-            GunDebugText = CreateCornerText("GunDebugText", 22.0f, 120.0f);
+            GunDebugText = CreateHudText("GunDebugText", 22.0f, 120.0f);
             GunDebugText.color = new Color(1.0f, 1.0f, 1.0f, 0.7f);
         }
 
@@ -74,7 +87,9 @@ public class FPSLevel : MonoBehaviour, ILevel
         FPSCamera.gameObject.SetActive(false);
         Player.gameObject.SetActive(false);
         ArenaLighting.gameObject.SetActive(false);
+
         Hud.SetActive(false);
+        
         SetFlashAlpha(0.0f);
 
         if(Music != null)
@@ -108,7 +123,6 @@ public class FPSLevel : MonoBehaviour, ILevel
         ArenaElevator.position = vTop;
         StartEncounter();
 
-        // Takes over the motor sound of the bar's elevator, so the whole way down sounds like one ride.
         elevator.StartRideSound(ArenaElevator);
         yield return RideElevator(vTop, m_vElevatorRest, fRideDownDuration, true);
         elevator.StopRideSound();
@@ -161,6 +175,7 @@ public class FPSLevel : MonoBehaviour, ILevel
         {
             float t = Mathf.SmoothStep(0.0f, 1.0f, fElapsed / fDuration);
             ArenaElevator.position = Vector3.Lerp(vFrom, vTo, t);
+
             Player.Teleport(ArenaElevator.position + vPlayerOffset);
             fader.alpha = bFadeIn
                 ? 1.0f - Mathf.InverseLerp(0.0f, fFadeDuration, fElapsed)
@@ -354,30 +369,35 @@ public class FPSLevel : MonoBehaviour, ILevel
 
     void RefreshGunHud()
     {
-        AmmoConstraint ammo = Player.EquippedGun?.GetConstraint<AmmoConstraint>();
-        if(ammo != null)
+        ShowCounter(AmmoText, Player.RightHandItem);
+        ShowCounter(OffhandAmmoText, Player.LeftHandItem);
+        QuickBarText.text = Player.DescribeQuickBar();
+        GunDebugText.text = bShowGunDebug ? Player.DebugPrintGun() : "";
+    }
+
+    static void ShowCounter(TMP_Text text, HeldItem item)
+    {
+        if(item != null && item.TryGetCounter(out int nCurrent, out int nMax))
         {
-            AmmoText.SetText("{0} / {1}", ammo.Rounds, ammo.Capacity);
+            text.SetText("{0} / {1}", nCurrent, nMax);
         }
         else
         {
-            AmmoText.text = "";
+            text.text = "";
         }
-
-        GunDebugText.text = bShowGunDebug ? Player.DebugPrintGun() : "";
     }
-    
-    TMP_Text CreateCornerText(string sName, float fFontSize, float fBottom)
+
+    TMP_Text CreateHudText(string sName, float fFontSize, float fBottom, float fAnchorX = 1.0f)
     {
         TMP_Text text = Instantiate(HudText, HudText.transform.parent);
         text.name = sName;
         text.text = "";
         text.fontSize = fFontSize;
-        text.alignment = TextAlignmentOptions.BottomRight;
+        text.alignment = fAnchorX < 0.5f ? TextAlignmentOptions.BottomLeft : fAnchorX > 0.5f ? TextAlignmentOptions.BottomRight : TextAlignmentOptions.Bottom;
 
         RectTransform rect = text.rectTransform;
-        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(1.0f, 0.0f);
-        rect.anchoredPosition = new Vector2(-40.0f, fBottom);
+        rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(fAnchorX, 0.0f);
+        rect.anchoredPosition = new Vector2((0.5f - fAnchorX) * 80.0f, fBottom);
         rect.sizeDelta = new Vector2(900.0f, 400.0f);
         return text;
     }

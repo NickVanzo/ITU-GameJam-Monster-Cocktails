@@ -11,7 +11,7 @@ public struct ShooterState
     public IDamageable Owner;
 }
 
-public struct GunHit
+public struct RayHit
 {
     public Vector3 vPoint;
     public Vector3 vNormal;
@@ -27,8 +27,8 @@ public class Gun
     GunSpawner Spawner;
     public event Action OnBlocked;
     public event Action OnFired;
-    public event Action<GunHit> OnHit;
-    Action<GunHit> m_HandleHit;
+    public event Action<RayHit> OnHit;
+    Action<RayHit> m_HandleHit;
 
     List<GunConstraint> aConstraints = new();
     public GunStats Stats = new();
@@ -94,7 +94,7 @@ public class Gun
         m_HandleHit = HandleHit;
     }
 
-    void HandleHit(GunHit hit)
+    void HandleHit(RayHit hit)
     {
         if(hit.Target != null)
         {
@@ -152,10 +152,9 @@ public class Gun
         return null;
     }
 
-    // That stat with attachments applied, false if nothing on this gun uses it (e.g. MagazineSize without an AmmoConstraint).
     public bool TryGetStat(GunStat eStat, out float fValue)
     {
-        if(eStat == GunStat.Recoil)   // the frame's, not a part's
+        if(eStat == GunStat.Recoil)
         {
             fValue = Stats.Get(GunStat.Recoil, Frame.fBaseRecoil);
             return true;

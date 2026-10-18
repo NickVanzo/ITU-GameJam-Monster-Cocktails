@@ -19,8 +19,11 @@ MonoBehaviour:
   - rid: 438351479862198335
   aStatChanges:
   - eStat: 0
-    fAdd: 0
-    fPercent: 25
+    fAdd: 15
+    fPercent: 0
+  - eStat: 6
+    fAdd: 1
+    fPercent: 0
   references:
     version: 2
     RefIds:

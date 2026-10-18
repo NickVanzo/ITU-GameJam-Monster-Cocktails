@@ -10,11 +10,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fa1a493203072f243933f3a717916a11, type: 3}
-  m_Name: DesertEagle
+  m_Name: Giuletta
   m_EditorClassIdentifier: Assembly-CSharp::GunObject
   sId: deagle_01
   sDisplayName: GIULETTA
-  DisplayModel: {fileID: 0}
+  ViewModel: {fileID: 682051322071174189, guid: 6abfd0f7283a90f409e13ff4c7bac0a2, type: 3}
+  vHandOffset: {x: 0, y: -0.193, z: 0.097}
+  vHandRotation: {x: 0, y: 0, z: 0}
+  EquipAction: {fileID: 0}
+  eOffhandButton: 1
+  fDrawTime: 0.15
+  fLowerDistance: 0.35
+  DrawSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  HolsterSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  DisplayModel: {fileID: 682051322071174189, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
   fBaseRecoil: 0.8
   aSlots:
   - eSlot: 1
@@ -57,6 +80,34 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
+  ReloadSpinCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  nReloadSpinTurns: 8
+  vReloadSpinAxis: {x: 1, y: -1, z: 0}
+  vReloadSpinPivot: {x: 0.15, y: 0, z: 0}
+  fReloadSpinYaw: 0
   references:
     version: 2
     RefIds:
@@ -72,7 +123,7 @@ MonoBehaviour:
     - rid: 6184553153461223493
       type: {class: HitscanSpawner, ns: , asm: Assembly-CSharp}
       data:
-        nBaseDamage: 1
+        nBaseDamage: 2
         fBaseRange: 100
         vBaseSpread: {x: 0, y: 0.25}
         fBaseHeatRate: 0.15

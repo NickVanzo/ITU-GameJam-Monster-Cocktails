@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +27,10 @@ public class GunStats
         m_aMultiply[(int)change.eStat] *= 1.0f + change.fPercent / 100.0f;
     }
 
-    public float Get(GunStat eStat, float fBase) => (fBase + m_aAdd[(int)eStat]) * m_aMultiply[(int)eStat];
+    public float Get(GunStat eStat, float fBase)
+    {
+        return (fBase + m_aAdd[(int)eStat]) * m_aMultiply[(int)eStat];
+    }
 }
 
 [Serializable]
@@ -52,7 +54,6 @@ public class GunSlotDefinition
     [Tooltip("What the workbench can fit in this slot, on top of Default (and an empty slot, unless required).")]
     public List<GunAttachment> aOptions = new();
 
-    // Everything the workbench cycles through, in order.
     public List<GunAttachment> GetChoices()
     {
         List<GunAttachment> aChoices = new();
@@ -246,6 +247,7 @@ public class AmmoConstraint : GunConstraint
     public int Rounds => m_nRounds;
     public int Capacity => m_nCapacity;
     public bool IsReloading => m_fReloadTimer > 0.0f;
+    public float ReloadProgress => IsReloading ? 1.0f - m_fReloadTimer / m_fReloadTime : 0.0f;
 
     public override void Init(GunStats stats)
     {
@@ -299,7 +301,7 @@ public class AmmoConstraint : GunConstraint
 
 [Serializable] public abstract class GunSpawner : GunPart
 {
-    public abstract void Spawn(in ShooterState shooter, GunStats stats, Action<GunHit> onHit);
+    public abstract void Spawn(in ShooterState shooter, GunStats stats, Action<RayHit> onHit);
 }
 
 
@@ -328,7 +330,7 @@ public class HitscanSpawner : GunSpawner
         m_fWarmup = 0;
     }
 
-    public override void Spawn(in ShooterState shooter, GunStats stats, Action<GunHit> onHit)
+    public override void Spawn(in ShooterState shooter, GunStats stats, Action<RayHit> onHit)
     {
         Vector3 vDirection = Scatter(shooter.vAim, Mathf.Lerp(m_vSpread.x, m_vSpread.y, m_fWarmup));
         if(!Physics.Raycast(shooter.vPos, vDirection, out RaycastHit hit, m_fRange, shooter.HitMask, QueryTriggerInteraction.Ignore))
@@ -342,7 +344,7 @@ public class HitscanSpawner : GunSpawner
             target = null;
         }
 
-        onHit(new GunHit () {
+        onHit(new RayHit () {
             vPoint = hit.point,
             vNormal = hit.normal,
             Target = target,

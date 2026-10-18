@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9a7e63a40d04bb98d124c676b389967, type: 3}
+  m_Name: Flashlight
+  m_EditorClassIdentifier: Assembly-CSharp::FlashlightObject
+  sId: flashlight_01
+  sDisplayName: FLASHLIGHT
+  ViewModel: {fileID: 1167259632974843931, guid: 715b056be22e9d546a43535f80e7c4f9, type: 3}
+  vHandOffset: {x: 0, y: 0, z: 0}
+  vHandRotation: {x: 0, y: 0, z: 0}
+  EquipAction: {fileID: 5329026276540904371, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  eRepress: 1
+  eOffhandButton: 0
+  fDrawTime: 0.15
+  fLowerDistance: 0.35
+  DrawSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  HolsterSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  fRange: 30
+  fAngle: 90
+  fIntensity: 5
+  BeamColor: {r: 1, g: 1, b: 1, a: 1}
