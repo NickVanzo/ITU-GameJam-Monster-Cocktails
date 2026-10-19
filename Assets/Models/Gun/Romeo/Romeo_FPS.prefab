@@ -21,6 +21,14 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 161270579302962839, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 161270579302962839, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 161270579302962839, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
@@ -34,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: e217e2d127834cdaa27aa61d396d30ca, type: 2}
     - target: {fileID: 682051322071174189, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
       propertyPath: m_Name
-      value: Romeo_full 1
+      value: Romeo_FPS
       objectReference: {fileID: 0}
     - target: {fileID: 850806915425503506, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'

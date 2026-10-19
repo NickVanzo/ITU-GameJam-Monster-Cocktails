@@ -109,6 +109,7 @@ public class FPSController : IDamageable, IWielder
         public readonly Vector3 vMuzzleOffset;
         public readonly float fSide;
         public float fKick;
+        public float fKickTarget;
         public HeldItem Current;
         public HeldItem Target;
         public float fRaise;
@@ -313,7 +314,7 @@ public class FPSController : IDamageable, IWielder
             return;
         }
 
-        if(SwapAction.WasPressedThisFrame())
+        if(SwapAction.WasPressedThisFrame() && !IsTwoHanded(m_RightHand.Target))
         {
             HeldItem right = m_RightHand.Target;
             SetTarget(m_RightHand, m_LeftHand.Target);
@@ -385,7 +386,19 @@ public class FPSController : IDamageable, IWielder
             return;
         }
 
+        if(IsTwoHanded(held) || IsTwoHanded(m_RightHand.Target))
+        {
+            SetTarget(m_RightHand, held);
+            SetTarget(m_LeftHand, null);
+            return;
+        }
+
         SetTarget(m_RightHand.Target == null ? m_RightHand : m_LeftHand, held);
+    }
+
+    static bool IsTwoHanded(HeldItem held)
+    {
+        return held != null && held.Item.bTwoHanded;
     }
 
     static void SetTarget(Hand hand, HeldItem held)
@@ -411,6 +424,7 @@ public class FPSController : IDamageable, IWielder
             hand.Target = null;
             hand.fRaise = 0.0f;
             hand.fKick = 0.0f;
+            hand.fKickTarget = 0.0f;
         }
 
         foreach(HeldItem held in m_aCarried)
@@ -557,10 +571,12 @@ public class FPSController : IDamageable, IWielder
         Hand hand = HandHolding(item) ?? m_RightHand;
         m_fPitch -= fRecoil;
         hand.fKick = 1.0f;
+        hand.fKickTarget = -65.0f * ( item.Item is GunObject ? ((GunObject) item.Item).fBaseRecoil : 1.0f );
 
         if(ImpulseSource != null)
         {
-            ImpulseSource.GenerateImpulseWithVelocity(new Vector3(0.0f, 0.0f, -0.06f));
+            float fCameraKick =  -0.06f;
+            ImpulseSource.GenerateImpulseWithVelocity(new Vector3(0.0f, 0.0f, fCameraKick));
         }
 
         if(hand.MuzzleFlash != null)
@@ -729,9 +745,10 @@ public class FPSController : IDamageable, IWielder
         hand.fKick = Mathf.MoveTowards(hand.fKick, 0.0f, Time.deltaTime * 10.0f);
         float fKick = hand.fKick * Mathf.Lerp(1.0f, fGunZoomedRecoil, fAim);
 
+
         Vector3 vPosition = Vector3.Lerp(hand.vRestPosition, vGunAimPosition, fAim) + vBob + Vector3.down * fLower;
         hand.Root.localPosition = vPosition + new Vector3(0.0f, 0.0f, -0.08f * fKick);
-        hand.Root.localRotation = Quaternion.Euler(-65.0f * fKick, 0.0f, 0.0f);
+        hand.Root.localRotation = Quaternion.Euler(hand.fKickTarget * fKick, 0.0f, 0.0f);
 
         if(hand.MuzzleFlash != null)
         {

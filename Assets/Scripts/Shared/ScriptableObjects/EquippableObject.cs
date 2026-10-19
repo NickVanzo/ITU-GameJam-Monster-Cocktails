@@ -89,6 +89,7 @@ public abstract class EquippableObject : ScriptableObject
     public Vector3 vHandRotation;
 
     [Header("Equip")]
+    public bool bTwoHanded;
     public InputActionReference EquipAction;
     [Tooltip("Pressing the bind again while this is in hand: put it away, or use it (e.g. flashlight on/off).")]
     public EquipRepress eRepress = EquipRepress.Holster;

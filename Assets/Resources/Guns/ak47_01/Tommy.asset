@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa1a493203072f243933f3a717916a11, type: 3}
+  m_Name: Tommy
+  m_EditorClassIdentifier: Assembly-CSharp::GunObject
+  sId: ak47_01
+  sDisplayName: Tommy
+  ViewModel: {fileID: 1273483598709244680, guid: 131a4bf536bcd2845ad78a832284d5b2, type: 3}
+  vHandOffset: {x: 0, y: -0.06, z: 0.12}
+  vHandRotation: {x: 0, y: 0, z: 0}
+  bTwoHanded: 1
+  EquipAction: {fileID: 0}
+  eRepress: 0
+  fHoldToHolster: 0.4
+  eSecondaryButton: 1
+  fDrawTime: 0.3
+  fLowerDistance: 0.45
+  DrawSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  HolsterSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  DisplayModel: {fileID: 1273483598709244680, guid: 25d13f9302644acbbe70ca93bac69c37, type: 3}
+  fBaseRecoil: 0.15
+  aSlots: []
+  Trigger:
+    rid: 2693511273250582326
+  aConstraints:
+  - rid: 2929022447102911123
+  Spawner:
+    rid: 5928429352192127018
+  Shot:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  DryFire:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  Reload:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  ReloadSpinCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  nReloadSpinTurns: 1
+  vReloadSpinAxis: {x: 1, y: -0.25, z: 0}
+  vReloadSpinPivot: {x: 0, y: 0, z: 0}
+  fReloadSpinYaw: 20
+  references:
+    version: 2
+    RefIds:
+    - rid: 2693511273250582326
+      type: {class: ContinuousTrigger, ns: , asm: Assembly-CSharp}
+      data:
+        fRoundsPerMinute: 700
+    - rid: 2929022447102911123
+      type: {class: AmmoConstraint, ns: , asm: Assembly-CSharp}
+      data:
+        nBaseCapacity: 30
+        fBaseReloadTime: 2.2
+    - rid: 5928429352192127018
+      type: {class: HitscanSpawner, ns: , asm: Assembly-CSharp}
+      data:
+        nBaseDamage: 1
+        fBaseRange: 150
+        vBaseSpread: {x: 0.6, y: 1.5}
+        fBaseHeatRate: 0.15

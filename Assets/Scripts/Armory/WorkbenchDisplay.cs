@@ -17,6 +17,7 @@ public class WorkbenchDisplay : MonoBehaviour
     public PhysicsMaterial GunDropMaterial;
     Rigidbody m_Body;
     Coroutine m_Pulse;
+    Vector3 m_vRestPosition;
 
     public void Show(GunObject frame)
     {
@@ -39,26 +40,30 @@ public class WorkbenchDisplay : MonoBehaviour
         }
 
         m_Frame = frame;
-        GameObject model;
+        GameObject prefab = frame != null && frame.DisplayModel != null ? frame.DisplayModel : PlaceHolderModel;
 
-        if(frame == null || frame.DisplayModel == null)
+        var holder = new GameObject(prefab.name);
+        holder.transform.SetParent(transform, false);
+
+        Transform model = Instantiate(prefab, holder.transform, false).transform;
+        Bounds bounds = MeshBounds(model, holder.transform);
+        model.localPosition -= bounds.center;
+
+        // todo : we can bake collider within the preview prefab
+        if(model.GetComponentInChildren<Collider>() == null)
         {
-            model = Instantiate(PlaceHolderModel, transform.position, transform.rotation, transform);
-        }
-        else
-        {
-            model = Instantiate(frame.DisplayModel, transform.position, transform.rotation, transform);
+            BoxCollider box = holder.AddComponent<BoxCollider>();
+            box.size = bounds.size;
+            box.material = GunDropMaterial;
         }
 
-        AddColliderIfMissing(model);
+        holder.transform.localPosition = Vector3.up * bounds.extents.y;
+        m_vRestPosition = holder.transform.position;
 
-        if(!model.TryGetComponent(out m_Body))
-        {
-            m_Body = model.AddComponent<Rigidbody>();
-        }
+        m_Body = holder.AddComponent<Rigidbody>();
         m_Body.interpolation = RigidbodyInterpolation.Interpolate;
         m_Body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-
+        m_Body.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
     }
 
     public void Pulse()
@@ -86,17 +91,16 @@ public class WorkbenchDisplay : MonoBehaviour
         for(float t = 0.0f; t < 1.0f; t += Time.fixedDeltaTime / fReturnDuration)
         {
             float fBlend = Mathf.SmoothStep(0.0f, 1.0f, t);
-            m_Body.MovePosition(Vector3.Lerp(vFrom, transform.position, fBlend));
+            m_Body.MovePosition(Vector3.Lerp(vFrom, m_vRestPosition, fBlend));
             m_Body.MoveRotation(Quaternion.Slerp(qFrom, transform.rotation, fBlend));
             yield return new WaitForFixedUpdate();
         }
 
         m_Body.isKinematic = false;
-        m_Body.position = transform.position;
+        m_Body.position = m_vRestPosition;
         m_Body.rotation = transform.rotation;
         m_Body.linearVelocity = Vector3.up * fHopSpeed;
         m_Body.angularVelocity = Random.onUnitSphere * fHopSpin;
-        m_Body.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
         m_Pulse = null;
     }
 
@@ -118,14 +122,8 @@ public class WorkbenchDisplay : MonoBehaviour
         }
     }
 
-    void AddColliderIfMissing(GameObject model)
+    static Bounds MeshBounds(Transform model, Transform space)
     {
-        if(model.GetComponentInChildren<Collider>() != null)
-        {
-            return;
-        }
-
-        Transform root = model.transform;
         Bounds bounds = default;
         bool bAny = false;
 
@@ -136,26 +134,20 @@ public class WorkbenchDisplay : MonoBehaviour
             for(int i = 0; i < 8; ++i)
             {
                 Vector3 vCorner = local.center + Vector3.Scale(local.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
-                Vector3 vInRoot = root.InverseTransformPoint(renderer.transform.TransformPoint(vCorner));
+                Vector3 vInSpace = space.InverseTransformPoint(renderer.transform.TransformPoint(vCorner));
 
                 if(bAny)
                 {
-                    bounds.Encapsulate(vInRoot);
+                    bounds.Encapsulate(vInSpace);
                 }
                 else
                 {
-                    bounds = new Bounds(vInRoot, Vector3.zero);
+                    bounds = new Bounds(vInSpace, Vector3.zero);
                     bAny = true;
                 }
             }
         }
 
-        if(bAny)
-        {
-            BoxCollider box = model.AddComponent<BoxCollider>();
-            box.center = bounds.center;
-            box.size = bounds.size;
-            box.material = GunDropMaterial;
-        }
+        return bounds;
     }
 }
