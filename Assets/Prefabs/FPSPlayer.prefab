@@ -440,3 +440,4 @@ MonoBehaviour:
   OffhandItems:
   - {fileID: 11400000, guid: 3e19696e306049ca9593c0977453478c, type: 2}
   - {fileID: 11400000, guid: 58c5f9a606a0487cb1d4eadfa93931d8, type: 2}
+  - {fileID: 11400000, guid: 906728597a9047cb82a973e2b4c39c8b, type: 2}

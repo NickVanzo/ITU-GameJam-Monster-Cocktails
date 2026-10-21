@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7797f36f8ce4e4cb9a23de8f859eccc, type: 3}
+  m_Name: Phone
+  m_EditorClassIdentifier: Assembly-CSharp::PhoneObject
+  sId: phone_01
+  sDisplayName: PHONE
+  ViewModel: {fileID: 4630171903749997650, guid: 42b8a9be705d7b947b6e09d1c438fd59, type: 3}
+  vHandOffset: {x: 0, y: -0.1, z: 0.097}
+  vHandRotation: {x: 0, y: 225, z: 0}
+  bTwoHanded: 0
+  EquipAction: {fileID: 0}
+  eRepress: 1
+  fHoldToHolster: 0.4
+  eSecondaryButton: 0
+  fDrawTime: 0.15
+  fLowerDistance: 0.35
+  DrawSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  HolsterSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  sLidName: Phone_top
+  sHingeName: Middle_Hinge
+  fClosedAngle: 150
+  fFlipTime: 0.2
+  OpenSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
+  CloseSound:
+    Clips: []
+    Volume: 1
+    PitchRange: {x: 0.95, y: 1.05}
+    SpatialBlend: 1
+    MaxDistance: 25
+    MaxInstances: 0
+    RestartWhenFull: 0
