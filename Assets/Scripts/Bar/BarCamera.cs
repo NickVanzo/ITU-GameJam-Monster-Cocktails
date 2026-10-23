@@ -38,10 +38,16 @@ public class BarCamera : MonoBehaviour
     int m_nMoveDirection;
     float m_fStillTime;
 
-    public Quaternion BaseRotation
+    public Quaternion BaseRotation => transform.parent != null
+        ? transform.parent.rotation * m_qBaseRotation
+        : m_qBaseRotation;
+
+    /// <summary>Sets the world-space orientation around which cursor look and sway are applied.</summary>
+    public void SetBaseRotation(Quaternion rotation)
     {
-        get => m_qBaseRotation;
-        set => m_qBaseRotation = value;
+        m_qBaseRotation = transform.parent != null
+            ? Quaternion.Inverse(transform.parent.rotation) * rotation
+            : rotation;
     }
 
     void Awake()
