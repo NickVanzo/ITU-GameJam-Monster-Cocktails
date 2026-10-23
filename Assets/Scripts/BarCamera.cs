@@ -2,7 +2,7 @@ using UnityEngine;
 
 // Makes the bar camera feel alive: it leans toward the cursor, sways with a bit of noise,
 // wobbles its head like a bobblehead when it slides to another room, and zooms while right click is held.
-// Player moves the camera's position, this only touches its rotation and field of view.
+// Player sets the camera's position and base rotation; this adds look, sway and field of view.
 [RequireComponent(typeof(Camera))]
 public class BarCamera : MonoBehaviour
 {
@@ -40,6 +40,18 @@ public class BarCamera : MonoBehaviour
     float m_fTiltVelocity;
     int m_nMoveDirection;
     float m_fStillTime;
+
+    public Quaternion BaseRotation => transform.parent != null
+        ? transform.parent.rotation * m_qBaseRotation
+        : m_qBaseRotation;
+
+    /// <summary>Sets the world-space orientation around which cursor look and sway are applied.</summary>
+    public void SetBaseRotation(Quaternion rotation)
+    {
+        m_qBaseRotation = transform.parent != null
+            ? Quaternion.Inverse(transform.parent.rotation) * rotation
+            : rotation;
+    }
 
     void Awake()
     {
