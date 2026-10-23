@@ -3,7 +3,8 @@ using UnityEngine;
 
 public enum Rooms {
     MainRoom,
-    Kitchen
+    Kitchen,
+	Shop
 }
 
 public class Player : MonoBehaviour
@@ -13,11 +14,13 @@ public class Player : MonoBehaviour
     public Transform mainCamera;
     public Transform kitchenCameraPosition;
     public Transform customersCameraPosition;
+	public Transform shopCameraPosition;
     public float movementSpeed = 10.0f;
     public AnimationCurve Curve;
     
     [SerializeField] private GameObject toCustomersButton;
     [SerializeField] private GameObject toKitchenButton;
+	[SerializeField] private GameObject toShopButton;
 
     private Coroutine transitionCoroutine;
 
@@ -55,38 +58,59 @@ public class Player : MonoBehaviour
         bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
         bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
 
-        if ((left && currentRoom == Rooms.Kitchen) || (right && currentRoom == Rooms.MainRoom))
+        if (!left && !right) return;
+        if (left && currentRoom == Rooms.Shop || right && currentRoom == Rooms.Kitchen) return;
+        
+        Rooms newRoom = currentRoom;
+        if (currentRoom == Rooms.MainRoom)
         {
-            ChangeRoom();
+            newRoom = left ? Rooms.Shop : Rooms.Kitchen;
         }
+
+        if (currentRoom == Rooms.Shop)
+        {
+            newRoom = Rooms.MainRoom;
+        }
+
+        if (currentRoom == Rooms.Kitchen)
+        {
+            newRoom = Rooms.MainRoom;
+        }
+
+        Debug.Log(newRoom);
+        ChangeRoom(newRoom);
     }
 
-    public void ChangeRoom()
+    public void ChangeRoom(Rooms newRoom)
     {
-        currentRoom = (currentRoom == Rooms.MainRoom) ? Rooms.Kitchen : Rooms.MainRoom;
+        currentRoom = newRoom;
         Sfx.Play(Sfx.Sounds.RoomSwitch);
 
         // Stop any ongoing move coroutine before starting a new one
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
 
-        transitionCoroutine = StartCoroutine(MoveCameraTo(CameraPositionFor(currentRoom)));
+        transitionCoroutine = StartCoroutine(MoveCameraTo(CameraPositionFor(newRoom)));
         RefreshRoomButtons();
     }
 
     private Transform CameraPositionFor(Rooms room)
     {
-        return (room == Rooms.Kitchen) ? kitchenCameraPosition : customersCameraPosition;
+        if(room == Rooms.Kitchen) return kitchenCameraPosition;
+        if(room == Rooms.Shop) return shopCameraPosition;
+        return customersCameraPosition;
     }
 
     private void RefreshRoomButtons()
     {
-        toCustomersButton.SetActive(currentRoom == Rooms.Kitchen);
+        toCustomersButton.SetActive(currentRoom != Rooms.MainRoom);
         toKitchenButton.SetActive(currentRoom == Rooms.MainRoom);
+        toShopButton.SetActive(currentRoom == Rooms.MainRoom);
     }
 
     private IEnumerator MoveCameraTo(Transform target)
     {
+        Debug.Log("Moving camera to: " + target.position);
         float delta = 0;
         while (Vector3.Distance(mainCamera.position, target.position) > 0.01f)
         {
