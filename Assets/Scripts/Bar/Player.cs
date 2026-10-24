@@ -24,10 +24,8 @@ public class Player : MonoBehaviour
     public float movementSpeed = 10.0f;
     public AnimationCurve Curve;
 
-    [SerializeField] private GameObject toCustomersButton;
-    [SerializeField] private GameObject toKitchenButton;
-    [SerializeField] private GameObject toShopButton;
-
+    [SerializeField] private GameObject goLeftUIButton;
+    [SerializeField] private GameObject goRightUIButton;
     private Coroutine transitionCoroutine;
     private BarCamera barCamera;
     private bool zoomedInShop = false;
@@ -158,20 +156,24 @@ public class Player : MonoBehaviour
         transitionCoroutine = StartCoroutine(MoveCameraTo(nextCameraPosition ?? currentPointOfInterest.playerPointOfView));
     }
 
-    // Called by the kitchen and customers buttons: the customer area goes to the kitchen, every other room comes back to it.
-    public void ChangeRoom()
+    public void ChangeRoom(bool leftButtonPressed)
     {
-        GoToRoom((currentRoom == Rooms.MainRoom) ? Rooms.Kitchen : Rooms.MainRoom);
-    }
-
-    // Called by the shop button.
-    public void GoToShop()
-    {
-        GoToRoom(Rooms.Shop);
+        Debug.Log("Change room");
+        Rooms newRoom = currentRoom;
+        if (leftButtonPressed)
+        {
+            newRoom = currentRoom == Rooms.MainRoom ? Rooms.Shop : Rooms.MainRoom;
+        }
+        else
+        {
+            newRoom = currentRoom == Rooms.Shop ? Rooms.MainRoom : Rooms.Kitchen;
+        }
+        GoToRoom(newRoom);
     }
 
     public void GoToRoom(Rooms room)
     {
+        Debug.Log(room + " " + currentRoom);
         if (room == currentRoom)
             return;
 
@@ -201,9 +203,8 @@ public class Player : MonoBehaviour
 
     private void RefreshRoomButtons()
     {
-        toCustomersButton.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.Shop);
-        toKitchenButton.SetActive(currentRoom == Rooms.MainRoom);
-        toShopButton.SetActive(currentRoom == Rooms.MainRoom);
+        goLeftUIButton.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.MainRoom);
+        goRightUIButton.SetActive(currentRoom == Rooms.MainRoom || currentRoom == Rooms.Shop);
     }
 
     private IEnumerator MoveCameraTo(Transform target)
