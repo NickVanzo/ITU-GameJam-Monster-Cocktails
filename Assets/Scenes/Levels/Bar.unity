@@ -36431,8 +36431,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cabinet
   playerPointOfView: {fileID: 290165984}
-  next: {fileID: 0}
-  prev: {fileID: 85298678}
+  next: {fileID: 85298678}
+  prev: {fileID: 0}
 --- !u!1 &1828929569
 GameObject:
   m_ObjectHideFlags: 0
