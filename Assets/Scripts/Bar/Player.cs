@@ -158,7 +158,6 @@ public class Player : MonoBehaviour
 
     public void ChangeRoom(bool leftButtonPressed)
     {
-        Debug.Log("Change room");
         Rooms newRoom = currentRoom;
         if (leftButtonPressed)
         {
@@ -173,7 +172,6 @@ public class Player : MonoBehaviour
 
     public void GoToRoom(Rooms room)
     {
-        Debug.Log(room + " " + currentRoom);
         if (room == currentRoom)
             return;
 
