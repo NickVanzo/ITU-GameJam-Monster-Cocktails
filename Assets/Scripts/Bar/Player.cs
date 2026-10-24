@@ -99,9 +99,17 @@ public class Player : MonoBehaviour
                 return;
             }
 
-            if (zoomedInShop && (left || right))
+            if (zoomedInShop)
             {
-                HandleShopMovement(BarMovementDirections.Left);
+                if (left)
+                {
+                    HandleShopMovement(BarMovementDirections.Left);    
+                }
+
+                if (right)
+                {
+                    HandleShopMovement(BarMovementDirections.Right);
+                }
                 return;
             }
         }
@@ -136,8 +144,11 @@ public class Player : MonoBehaviour
             StopCoroutine(transitionCoroutine);
 
         transitionCoroutine = StartCoroutine(MoveCameraTo(zoomedInShop ? centralPointOfInterest.playerPointOfView : shopCameraPosition));
+        if (!zoomedInShop && currentPointOfInterest != null)
+        {
+            currentPointOfInterest.OnPlayerUnfocus();
+        }
         currentPointOfInterest = centralPointOfInterest;
-
         RefreshRoomButtons();
     }
 
@@ -148,11 +159,16 @@ public class Player : MonoBehaviour
         {
             if (currentPointOfInterest.prev != null)
             {
+                currentPointOfInterest.OnPlayerUnfocus();    
                 currentPointOfInterest = currentPointOfInterest.prev;
+                currentPointOfInterest.OnPlayerFocus();
+
                 nextCameraPosition = currentPointOfInterest.playerPointOfView;
             }
             else
             {
+                currentPointOfInterest.OnPlayerUnfocus();
+                
                 currentPointOfInterest = centralPointOfInterest;
                 nextCameraPosition = currentPointOfInterest.playerPointOfView;
             }
@@ -161,11 +177,15 @@ public class Player : MonoBehaviour
         {
             if (currentPointOfInterest.next != null)
             {
+                currentPointOfInterest.OnPlayerUnfocus();
                 currentPointOfInterest = currentPointOfInterest.next;
+                currentPointOfInterest.OnPlayerFocus();
+
                 nextCameraPosition = currentPointOfInterest.playerPointOfView;
             }
             else
             {
+                currentPointOfInterest.OnPlayerUnfocus();
                 currentPointOfInterest = centralPointOfInterest;
                 nextCameraPosition = currentPointOfInterest.playerPointOfView;
             }
@@ -173,6 +193,7 @@ public class Player : MonoBehaviour
 
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
+        
         transitionCoroutine = StartCoroutine(MoveCameraTo(nextCameraPosition ?? currentPointOfInterest.playerPointOfView));
     }
 
