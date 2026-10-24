@@ -1,11 +1,20 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum Rooms {
     MainRoom,
     Kitchen,
     Workbench,
     Shop
+}
+
+public enum BarMovementDirections
+{
+    Left,
+    Right,
+    Down,
+    Up
 }
 
 public class Player : MonoBehaviour
@@ -24,8 +33,10 @@ public class Player : MonoBehaviour
     public float movementSpeed = 10.0f;
     public AnimationCurve Curve;
 
-    [SerializeField] private GameObject goLeftUIButton;
-    [SerializeField] private GameObject goRightUIButton;
+    [SerializeField] private Button goLeftUIButton;
+    [SerializeField] private Button goRightUIButton;
+    [SerializeField] private Button goUpUIButton;
+    [SerializeField] private Button goDownUIButton;
     private Coroutine transitionCoroutine;
     private BarCamera barCamera;
     private bool zoomedInShop = false;
@@ -42,6 +53,13 @@ public class Player : MonoBehaviour
 
         barCamera = mainCamera.GetComponent<BarCamera>();
         SnapToRoom(Rooms.MainRoom);
+        
+        goLeftUIButton.onClick.AddListener(() => ChangeRoom(BarMovementDirections.Left));
+        goRightUIButton.onClick.AddListener(() => ChangeRoom(BarMovementDirections.Right));
+        goUpUIButton.onClick.AddListener(() => HandleShopZoom());
+        goDownUIButton.onClick.AddListener(() => HandleShopZoom());
+
+        RefreshRoomButtons();
     }
 
     public void SnapToRoom(Rooms room)
@@ -83,7 +101,7 @@ public class Player : MonoBehaviour
 
             if (zoomedInShop && (left || right))
             {
-                HandleShopMovement(left);
+                HandleShopMovement(BarMovementDirections.Left);
                 return;
             }
         }
@@ -120,13 +138,13 @@ public class Player : MonoBehaviour
         transitionCoroutine = StartCoroutine(MoveCameraTo(zoomedInShop ? centralPointOfInterest.playerPointOfView : shopCameraPosition));
         currentPointOfInterest = centralPointOfInterest;
 
-        goLeftUIButton.SetActive(zoomedInShop); 
+        RefreshRoomButtons();
     }
 
-    public void HandleShopMovement(bool isMovingLeft)
+    public void HandleShopMovement(BarMovementDirections movDir)
     {
         Transform nextCameraPosition = null;
-        if (isMovingLeft)
+        if (movDir == BarMovementDirections.Left)
         {
             if (currentPointOfInterest.prev != null)
             {
@@ -139,7 +157,7 @@ public class Player : MonoBehaviour
                 nextCameraPosition = currentPointOfInterest.playerPointOfView;
             }
         }
-        else
+        else if(movDir == BarMovementDirections.Right)
         {
             if (currentPointOfInterest.next != null)
             {
@@ -158,15 +176,17 @@ public class Player : MonoBehaviour
         transitionCoroutine = StartCoroutine(MoveCameraTo(nextCameraPosition ?? currentPointOfInterest.playerPointOfView));
     }
 
-    public void ChangeRoom(bool leftButtonPressed)
+    private void ChangeRoom(BarMovementDirections dir)
     {
+        if (dir != BarMovementDirections.Right && dir != BarMovementDirections.Left) return; // rooms are not up/down 
+        
         if (zoomedInShop)
         {
-            HandleShopMovement(leftButtonPressed);
+            HandleShopMovement(dir);
             return;
         }
         Rooms newRoom = currentRoom;
-        if (leftButtonPressed)
+        if (dir == BarMovementDirections.Left)
         {
             newRoom = currentRoom == Rooms.MainRoom ? Rooms.Shop : Rooms.MainRoom;
         }
@@ -208,15 +228,19 @@ public class Player : MonoBehaviour
 
     private void RefreshRoomButtons()
     {
-        if (zoomedInShop)
+        if (!zoomedInShop)
         {
-            goLeftUIButton.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.MainRoom);
-            goRightUIButton.SetActive(currentRoom == Rooms.MainRoom || currentRoom == Rooms.Shop);    
+            goLeftUIButton.gameObject.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.MainRoom);
+            goRightUIButton.gameObject.SetActive(currentRoom == Rooms.MainRoom || currentRoom == Rooms.Shop);
+            goUpUIButton.gameObject.SetActive(currentRoom == Rooms.Shop);
+            goDownUIButton.gameObject.SetActive(false);
         }
         else
         {
-            goLeftUIButton.SetActive(true);
-            goRightUIButton.SetActive(true);  
+            goLeftUIButton.gameObject.SetActive(true);
+            goRightUIButton.gameObject.SetActive(true);
+            goDownUIButton.gameObject.SetActive(true);
+            goUpUIButton.gameObject.SetActive(false);
         }
         
     }
