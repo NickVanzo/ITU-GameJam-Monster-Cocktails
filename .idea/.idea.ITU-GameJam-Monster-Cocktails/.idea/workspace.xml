@@ -5,8 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a3129551-ce2c-411c-ab30-f1926985b011" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ITU-GameJam-Monster-Cocktails/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ITU-GameJam-Monster-Cocktails/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Levels/Bar.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Levels/Bar.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bar/Player.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bar/Player.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -61,7 +59,7 @@
       <workItem from="1791921122017" duration="1328000" />
       <workItem from="1791986643189" duration="4071000" />
       <workItem from="1792683221177" duration="1836000" />
-      <workItem from="1792760777238" duration="8591000" />
+      <workItem from="1792760777238" duration="8907000" />
     </task>
     <servers />
   </component>

@@ -119,6 +119,8 @@ public class Player : MonoBehaviour
 
         transitionCoroutine = StartCoroutine(MoveCameraTo(zoomedInShop ? centralPointOfInterest.playerPointOfView : shopCameraPosition));
         currentPointOfInterest = centralPointOfInterest;
+
+        goLeftUIButton.SetActive(zoomedInShop); 
     }
 
     public void HandleShopMovement(bool isMovingLeft)
@@ -158,6 +160,11 @@ public class Player : MonoBehaviour
 
     public void ChangeRoom(bool leftButtonPressed)
     {
+        if (zoomedInShop)
+        {
+            HandleShopMovement(leftButtonPressed);
+            return;
+        }
         Rooms newRoom = currentRoom;
         if (leftButtonPressed)
         {
@@ -201,8 +208,17 @@ public class Player : MonoBehaviour
 
     private void RefreshRoomButtons()
     {
-        goLeftUIButton.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.MainRoom);
-        goRightUIButton.SetActive(currentRoom == Rooms.MainRoom || currentRoom == Rooms.Shop);
+        if (zoomedInShop)
+        {
+            goLeftUIButton.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.MainRoom);
+            goRightUIButton.SetActive(currentRoom == Rooms.MainRoom || currentRoom == Rooms.Shop);    
+        }
+        else
+        {
+            goLeftUIButton.SetActive(true);
+            goRightUIButton.SetActive(true);  
+        }
+        
     }
 
     private IEnumerator MoveCameraTo(Transform target)
