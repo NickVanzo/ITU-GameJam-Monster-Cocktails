@@ -11,6 +11,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private float interactionDistance = 100f;
 
     private Player player;
+    private ShopItem hoveredItem;
 
     void Awake()
     {
@@ -19,27 +20,36 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
-        if (!Input.GetMouseButtonDown(0))
-        {
-            return;
-        }
-
-        // The workbench panel takes the clicks there, don't let them reach the rope or the ingredients behind it.
+        // The workbench panel owns interactions while it is open.
         if (player != null && player.CurrentRoom == Rooms.Workbench)
         {
+            UpdateHoveredItem(null);
             return;
         }
 
         if (!TryRaycastFromCursor(out RaycastHit hit))
         {
+            UpdateHoveredItem(null);
             return;
         }
 
-        GameObject target = hit.collider.gameObject;
+        ShopItem item = hit.collider.GetComponentInParent<ShopItem>();
+        UpdateHoveredItem(item);
 
+        if (!Input.GetMouseButtonDown(0))
+        {
+            return;
+        }
+
+        HandleClick(hit.collider.gameObject);
+    }
+
+    private void HandleClick(GameObject target)
+    {
         if (target.CompareTag(IngredientTag))
         {
-            if (target.TryGetComponent(out Ingredient ingredient) && MaterialInventory.TryConsume(ingredient.type))
+            if (target.TryGetComponent(out Ingredient ingredient)
+                && MaterialInventory.TryConsume(ingredient.type))
             {
                 Debug.Log($"{ingredient.type.ToString().ToUpper()} consumed");
                 kitchenGlass.AddIngredient(ingredient.type);
@@ -66,25 +76,56 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            Workbench workbench = target.GetComponentInParent<Workbench>();
-            if (workbench != null)
-            {
-                workbench.Open();
-                return;
-            }
-
-            ElevatorRope rope = target.GetComponentInParent<ElevatorRope>();
-            if (rope != null)
-            {
-                rope.BeginDrag();
-            }
+            HandleObjectClick(target);
         }
+    }
+
+    private void HandleObjectClick(GameObject target)
+    {
+        Workbench workbench = target.GetComponentInParent<Workbench>();
+        if (workbench != null)
+        {
+            workbench.Open();
+            return;
+        }
+
+        ElevatorRope rope = target.GetComponentInParent<ElevatorRope>();
+        if (rope != null)
+        {
+            rope.BeginDrag();
+        }
+    }
+
+    private void UpdateHoveredItem(ShopItem nextItem)
+    {
+        if (hoveredItem == nextItem)
+        {
+            return;
+        }
+
+        if (hoveredItem != null)
+        {
+            hoveredItem.SetHovered(false);
+        }
+
+        hoveredItem = nextItem;
+
+        if (hoveredItem != null)
+        {
+            hoveredItem.SetHovered(true);
+        }
+    }
+
+    private void OnDisable()
+    {
+        UpdateHoveredItem(null);
     }
 
     private bool TryRaycastFromCursor(out RaycastHit hit)
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         // Ignore triggers so volume bounds and other trigger zones don't block clicks.
-        return Physics.Raycast(ray, out hit, interactionDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        return Physics.Raycast(ray, out hit, interactionDistance,
+            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 }
