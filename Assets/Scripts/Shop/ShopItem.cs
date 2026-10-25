@@ -16,7 +16,7 @@ public class ShopItem : MonoBehaviour
     {
         if (isMouseOverItem)
         {
-            if(!hoverSoundPlayed) Sfx.Play(hoverSound);
+            if(hoverSound != null && !hoverSoundPlayed) Sfx.Play(hoverSound);
             
             hoverSoundPlayed = true;
             if (!isMouseOverItem) return;
