@@ -6,6 +6,7 @@ public enum Rooms {
     MainRoom,
     Kitchen,
     Workbench,
+    Loadout,
     Shop
 }
 
@@ -26,10 +27,10 @@ public class Player : MonoBehaviour
     public Transform customersCameraPosition;
     [Tooltip("Where the camera sits at the workbench. Its rotation is used too: frame the bench in the Scene view, then GameObject > Align With View.")]
     public Transform workbenchCameraPosition;
+    public Transform loadoutCameraPosition;
     public ShopPointOfInterest centralPointOfInterest;
     public ShopPointOfInterest currentPointOfInterest;
 	public Transform inpectItemTransform;
-
     public Transform shopCameraPosition;
     public float movementSpeed = 10.0f;
     public AnimationCurve Curve;
@@ -83,8 +84,8 @@ public class Player : MonoBehaviour
     // The shop is to the left of the customer area and the kitchen to its right, so A/Left and D/Right slide the camera that way.
     private void HandleRoomKeys()
     {
-        // The workbench uses the same keys to browse guns and attachments.
-        if (currentRoom == Rooms.Workbench)
+        // The benches handle their own keys while open, e.g. the workbench browses guns and attachments with these.
+        if (currentRoom == Rooms.Workbench || currentRoom == Rooms.Loadout)
             return;
 
         bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
@@ -241,10 +242,16 @@ public class Player : MonoBehaviour
     {
         switch (room)
         {
-            case Rooms.Kitchen: return kitchenCameraPosition;
-            case Rooms.Workbench: return workbenchCameraPosition;
-            case Rooms.Shop: return shopCameraPosition;
-            default: return customersCameraPosition;
+            case Rooms.Kitchen: 
+                return kitchenCameraPosition;
+            case Rooms.Workbench: 
+                return workbenchCameraPosition;
+            case Rooms.Loadout: 
+                return loadoutCameraPosition;
+            case Rooms.Shop: 
+                return shopCameraPosition;
+            default: 
+                return customersCameraPosition;
         }
     }
 

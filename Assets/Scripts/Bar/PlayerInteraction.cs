@@ -35,8 +35,8 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
-        // The workbench panel owns interactions while it is open.
-        if (player != null && player.CurrentRoom == Rooms.Workbench)
+        // The bench panels own interactions while they are open.
+        if (player != null && (player.CurrentRoom == Rooms.Workbench || player.CurrentRoom == Rooms.Loadout))
         {
             UpdateHoveredItem(null);
             return;
@@ -164,6 +164,13 @@ public class PlayerInteraction : MonoBehaviour
 
     private void HandleObjectClick(GameObject target)
     {
+        LoadoutBench loadoutBench = target.GetComponentInParent<LoadoutBench>();
+        if (loadoutBench != null)
+        {
+            loadoutBench.Open();
+            return;
+        }
+
         Workbench workbench = target.GetComponentInParent<Workbench>();
         if (workbench != null)
         {
