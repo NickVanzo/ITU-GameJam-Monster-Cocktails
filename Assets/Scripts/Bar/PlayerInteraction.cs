@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class PlayerInteraction : MonoBehaviour
 {
@@ -9,17 +10,31 @@ public class PlayerInteraction : MonoBehaviour
 
     [SerializeField] private DrinkGlass kitchenGlass;
     [SerializeField] private float interactionDistance = 100f;
+    [SerializeField] private float inspectionRotationSpeed = 0.3f;
 
+    private static readonly KeyCode[] InputKeys = (KeyCode[])System.Enum.GetValues(typeof(KeyCode));
     private Player player;
     private ShopItem hoveredItem;
+    private ShopItem inspectedItem;
+    private Vector3 previousMousePosition;
+
+	public TMP_Text itemDescriptionForShop;    
 
     void Awake()
     {
         player = GetComponent<Player>();
+
+		itemDescriptionForShop.gameObject.SetActive(false);
     }
 
     void Update()
     {
+        if (inspectedItem != null)
+        {
+            UpdateInspection();
+            return;
+        }
+
         // The workbench panel owns interactions while it is open.
         if (player != null && player.CurrentRoom == Rooms.Workbench)
         {
@@ -36,12 +51,79 @@ public class PlayerInteraction : MonoBehaviour
         ShopItem item = hit.collider.GetComponentInParent<ShopItem>();
         UpdateHoveredItem(item);
 
-        if (!Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(1) && hoveredItem != null
+            && player != null && player.CurrentRoom == Rooms.Shop)
+        {
+            BeginInspection();
+        }
+        else if (Input.GetMouseButtonDown(0))
+        {
+            HandleClick(hit.collider.gameObject);
+        }
+    }
+
+    private void UpdateInspection()
+    {
+        if (HasInspectionDismissalInput()
+            || player == null || player.CurrentRoom != Rooms.Shop
+            || !inspectedItem.isActiveAndEnabled || !inspectedItem.inInspectingView)
+        {
+            EndInspection();
+            return;
+        }
+
+        Vector3 mousePosition = Input.mousePosition;
+        if (Input.GetMouseButton(0) && !Input.GetMouseButtonDown(0))
+        {
+            Vector3 delta = mousePosition - previousMousePosition;
+            Transform view = player.mainCamera;
+            inspectedItem.transform.Rotate(view.up,
+                -delta.x * inspectionRotationSpeed, Space.World);
+            inspectedItem.transform.Rotate(view.right,
+                delta.y * inspectionRotationSpeed, Space.World);
+        }
+        previousMousePosition = mousePosition;
+    }
+
+    private bool HasInspectionDismissalInput()
+    {
+        if (Input.mouseScrollDelta.sqrMagnitude > 0f) return true;
+        if (!Input.anyKeyDown) return false;
+
+        foreach (KeyCode key in InputKeys)
+        {
+            if (key != KeyCode.Mouse0 && Input.GetKeyDown(key)) return true;
+        }
+        return false;
+    }
+
+    private void BeginInspection()
+    {
+        if (player.inpectItemTransform == null)
         {
             return;
         }
 
-        HandleClick(hit.collider.gameObject);
+        hoveredItem.SetInspect(true, player.inpectItemTransform);
+		itemDescriptionForShop.gameObject.SetActive(true);
+		itemDescriptionForShop.text = hoveredItem.itemInfo.description;
+	
+        if (!hoveredItem.inInspectingView) return;
+
+        inspectedItem = hoveredItem;
+        previousMousePosition = Input.mousePosition;
+        UpdateHoveredItem(null);
+    }
+
+    private void EndInspection()
+    {
+        if (inspectedItem != null)
+        {
+            inspectedItem.SetInspect(false, null);
+        }
+		itemDescriptionForShop.gameObject.SetActive(false);
+        inspectedItem = null;
+        UpdateHoveredItem(null);
     }
 
     private void HandleClick(GameObject target)
@@ -98,12 +180,7 @@ public class PlayerInteraction : MonoBehaviour
 
     private void UpdateHoveredItem(ShopItem nextItem)
     {
-        if (hoveredItem == nextItem)
-        {
-            return;
-        }
-
-        if (hoveredItem != null)
+        if (hoveredItem != null && hoveredItem != nextItem)
         {
             hoveredItem.SetHovered(false);
         }
@@ -118,7 +195,7 @@ public class PlayerInteraction : MonoBehaviour
 
     private void OnDisable()
     {
-        UpdateHoveredItem(null);
+        EndInspection();
     }
 
     private bool TryRaycastFromCursor(out RaycastHit hit)

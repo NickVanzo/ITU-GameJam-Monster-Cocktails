@@ -28,6 +28,7 @@ public class Player : MonoBehaviour
     public Transform workbenchCameraPosition;
     public ShopPointOfInterest centralPointOfInterest;
     public ShopPointOfInterest currentPointOfInterest;
+	public Transform inpectItemTransform;
 
     public Transform shopCameraPosition;
     public float movementSpeed = 10.0f;
@@ -39,7 +40,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Button goDownUIButton;
     private Coroutine transitionCoroutine;
     private BarCamera barCamera;
-    private bool zoomedInShop = false;
+    public bool zoomedInShop = false;
 
     // Awake, not Start: the bar keeps this disabled while the camera rises, and a late Start would undo SnapToRoom.
     void Awake()
@@ -293,4 +294,8 @@ public class Player : MonoBehaviour
         if (barCamera != null)
             barCamera.SetBaseRotation(rotation);
     }
+
+	public bool LockCameraZoom() {
+		return zoomedInShop; 
+	}
 }

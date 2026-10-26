@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemSO
   displayName: Lucky Strike
   price: 1200
+  description: Deal damage

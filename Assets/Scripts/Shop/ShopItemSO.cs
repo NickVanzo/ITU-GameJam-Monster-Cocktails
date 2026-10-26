@@ -5,4 +5,5 @@ public class ShopItemSO : ScriptableObject
 {
     public string displayName;
     public int price;
+    public string description;
 }

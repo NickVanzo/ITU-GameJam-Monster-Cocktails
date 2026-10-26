@@ -17,6 +17,7 @@ public class CameraZoom
     float m_fTo;
     float m_fElapsed;
     bool bZoomed;
+    public Player player;
 
     public float FieldOfView { get; private set; } = 60.0f;
 
@@ -36,7 +37,7 @@ public class CameraZoom
 
     public float Update(bool bWantZoom, float fDeltaTime)
     {
-        if(bWantZoom != bZoomed)
+        if(bWantZoom != bZoomed && !player.LockCameraZoom())
         {
             bZoomed = bWantZoom;
             m_fFrom = FieldOfView;
