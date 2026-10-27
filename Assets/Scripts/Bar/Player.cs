@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public enum Rooms {
     MainRoom,
@@ -42,6 +43,7 @@ public class Player : MonoBehaviour
     private Coroutine transitionCoroutine;
     private BarCamera barCamera;
     public bool zoomedInShop = false;
+    public TMP_Text itemInteractionGuide;
 
     // Awake, not Start: the bar keeps this disabled while the camera rises, and a late Start would undo SnapToRoom.
     void Awake()
@@ -61,6 +63,8 @@ public class Player : MonoBehaviour
         goUpUIButton.onClick.AddListener(() => HandleShopZoom());
         goDownUIButton.onClick.AddListener(() => HandleShopZoom());
 
+		itemInteractionGuide.gameObject.SetActive(false);
+
         RefreshRoomButtons();
     }
 
@@ -79,6 +83,7 @@ public class Player : MonoBehaviour
     void Update()
     {
         HandleRoomKeys();
+		itemInteractionGuide.gameObject.SetActive(zoomedInShop && currentPointOfInterest != centralPointOfInterest);
     }
 
     // The shop is to the left of the customer area and the kitchen to its right, so A/Left and D/Right slide the camera that way.
@@ -151,7 +156,7 @@ public class Player : MonoBehaviour
             currentPointOfInterest.OnPlayerUnfocus();
         }
         currentPointOfInterest = centralPointOfInterest;
-        RefreshRoomButtons();
+        RefreshRoomButtons();		
     }
 
     public void HandleShopMovement(BarMovementDirections movDir)

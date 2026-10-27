@@ -18,14 +18,14 @@ public class PlayerInteraction : MonoBehaviour
     private ShopItem inspectedItem;
     private Vector3 previousMousePosition;
 
-	public TMP_Text itemDescriptionForShop;    
+	public TMP_Text itemDescriptionForShop;
 
     void Awake()
     {
         player = GetComponent<Player>();
 
 		itemDescriptionForShop.gameObject.SetActive(false);
-    }
+            }
 
     void Update()
     {
