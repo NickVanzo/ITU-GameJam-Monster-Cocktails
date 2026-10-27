@@ -34,6 +34,11 @@ public class BarLevel : MonoBehaviour, ILevel
 
         if(elevator.ArrivedByElevator)
         {
+            if(TimeManager.Instance != null)
+            {
+                TimeManager.Instance.ComeBackUp();
+            }
+
             // The elevator is in the kitchen, next to the armory, so that's where the player comes back up.
             Player.SnapToRoom(Rooms.Kitchen);
             yield return RaiseCamera();
@@ -54,6 +59,17 @@ public class BarLevel : MonoBehaviour, ILevel
 
     public void Leave()
     {
+        if(!TimeManager.ElevatorRuns)
+        {
+            Sfx.Play(Sfx.Sounds.OutOfStock);
+            return;
+        }
+
+        if(TimeManager.Instance != null)
+        {
+            TimeManager.Instance.GoBelow();
+        }
+
         bInBar = false;
     }
 

@@ -26,6 +26,7 @@ public class Customer : MonoBehaviour
     [SerializeField] private string requestLine;
     [SerializeField] private string wrongDrinkLine;
     [SerializeField] private string satisfiedLine;
+    [SerializeField] private string closingLine = "Closing already ??";
     [SerializeField] private float retryDelaySeconds = 5f;
     [SerializeField] private float satisfiedDisplaySeconds = 2f;
     [SerializeField] private float dialogueEndDelaySeconds = 2f;
@@ -158,6 +159,27 @@ public class Customer : MonoBehaviour
             Speak(wrongDrinkLine);
             StartCoroutine(RepeatRequestAfterDelay());
         }
+    }
+
+    public void LeaveBar()
+    {
+        if (!(state == State.MovingToCounter || state == State.WaitingForDrink) || BarGameState.Bar.State == CustomerState.InDialogue)
+        {
+            return;
+        }
+
+        // for now just drop everything..
+        StopAllCoroutines();
+        
+        CustomerManager.Instance.UnregisterActiveCustomer(this);
+        
+        BarGameState.Bar.State = CustomerState.Arriving;
+
+        Speak(closingLine);
+
+        state = State.MovingToExit;
+        
+        agent.SetDestination(waypoints[2].position);
     }
 
     private void UpdateFootsteps()

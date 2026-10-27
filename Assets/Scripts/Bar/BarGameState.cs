@@ -13,6 +13,8 @@ public class BarState
 {
     // Index into CustomerManager's customer list of the customer currently being served.
     public int nCustomer;
+    // Customers done since the bar door opened in the eveming
+    public int nServedTonight;
     public CustomerState State;
     // Options picked since the customer's starting dialogue, replayed to get back to the same line.
     public List<int> aChoices = new();

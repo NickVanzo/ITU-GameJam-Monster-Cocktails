@@ -162,8 +162,16 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
+    // todo: ts has to go kinda..
     private void HandleObjectClick(GameObject target)
     {
+        BarDoor barDoor = target.GetComponentInParent<BarDoor>();
+        if (barDoor != null)
+        {
+            barDoor.Toggle();
+            return;
+        }
+
         LoadoutBench loadoutBench = target.GetComponentInParent<LoadoutBench>();
         if (loadoutBench != null)
         {

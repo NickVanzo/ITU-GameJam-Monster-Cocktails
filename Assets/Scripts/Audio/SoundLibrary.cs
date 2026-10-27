@@ -45,6 +45,8 @@ public class SoundLibrary : ScriptableObject
     public Sound OutOfStock = new() { SpatialBlend = 0.0f };
     public Sound GlassFlush = new();
     public Sound Serve = new() { SpatialBlend = 0.0f };
+    public Sound DoorOpen = new();
+    public Sound DoorClose = new();
     public Sound CustomerArrive = new() { SpatialBlend = 0.0f };
     public Sound CustomerFootstep = new() { Volume = 0.5f, MaxDistance = 20.0f, PitchRange = new(0.85f, 1.15f) };
     public Sound CustomerSpeak = new() { MaxInstances = 1 };

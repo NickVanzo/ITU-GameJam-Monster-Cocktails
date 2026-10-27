@@ -18,6 +18,11 @@ public class CustomerManager : MonoBehaviour
     [SerializeField] private GameObject gameOverCanvas;
     [SerializeField] private PlayerInteraction playerInteraction;
 
+    [SerializeField] private int customersPerEvening = 3;
+
+    public bool HasCustomerInside => currentCustomer != null;
+    private Customer currentCustomer;
+
     void Awake()
     {
         Instance = this;
@@ -29,12 +34,44 @@ public class CustomerManager : MonoBehaviour
         {
             Instance = null;
         }
+
+        if (TimeManager.Instance != null)
+        {
+            TimeManager.Instance.OnPhaseChanged -= HandlePhaseChanged;
+            TimeManager.Instance.OnBarOpened -= HandleBarOpened;
+        }
     }
 
+    // Nobody comes in until the bar door opens.
     void Start()
     {
         gameOverCanvas.SetActive(false);
-        SpawnNextCustomer();
+
+        if (TimeManager.Instance != null)
+        {
+            TimeManager.Instance.OnPhaseChanged += HandlePhaseChanged;
+            TimeManager.Instance.OnBarOpened += HandleBarOpened;
+        }
+
+        if (TimeManager.IsBarOpen)
+        {
+            SpawnNextCustomer();
+        }
+    }
+
+    private void HandleBarOpened()
+    {
+        BarGameState.Bar.nServedTonight = 0;
+        StartCoroutine(SpawnNextCustomerAfterDelay());
+    }
+
+    private void HandlePhaseChanged(DayPhase phase)
+    {
+        // Bar closing
+        if (phase == DayPhase.Night && currentCustomer != null)
+        {
+            currentCustomer.LeaveBar();
+        }
     }
 
     public void ReturnToMainMenu()
@@ -61,6 +98,7 @@ public class CustomerManager : MonoBehaviour
     {
         BarState bar = BarGameState.Bar;
         bar.nCustomer++;
+        bar.nServedTonight++;
         bar.State = CustomerState.Arriving;
         bar.aChoices.Clear();
     }
@@ -72,6 +110,7 @@ public class CustomerManager : MonoBehaviour
 
     public void NotifyCustomerDespawned()
     {
+        currentCustomer = null;
         StartCoroutine(SpawnNextCustomerAfterDelay());
     }
 
@@ -84,6 +123,11 @@ public class CustomerManager : MonoBehaviour
     // Spawns the customer BarGameState says is being served, so a customer left mid-order comes back after a trip.
     private void SpawnNextCustomer()
     {
+        if (!TimeManager.IsBarOpen || HasCustomerInside)
+        {
+            return;
+        }
+
         BarState bar = BarGameState.Bar;
         if (customerPrefabs.Count == 0 || bar.nCustomer >= customerPrefabs.Count)
         {
@@ -92,9 +136,16 @@ public class CustomerManager : MonoBehaviour
             playerInteraction.enabled = false;
             return;
         }
-        
+
+        if (bar.nServedTonight >= customersPerEvening)
+        {
+            Debug.Log("last customer of the evening is gone, the bar can close");
+            return;
+        }
+
         GameObject prefab = customerPrefabs[bar.nCustomer];
-        Instantiate(prefab, waypoints[0].position, waypoints[0].rotation);
+        currentCustomer = Instantiate(prefab, waypoints[0].position, waypoints[0].rotation).GetComponent<Customer>();
+
         if (bar.State == CustomerState.Arriving)
         {
             Sfx.Play(Sfx.Sounds.CustomerArrive);
