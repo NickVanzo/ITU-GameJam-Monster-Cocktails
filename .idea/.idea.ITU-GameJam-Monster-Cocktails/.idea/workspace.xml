@@ -4,17 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a3129551-ce2c-411c-ab30-f1926985b011" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.ITU-GameJam-Monster-Cocktails/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ITU-GameJam-Monster-Cocktails/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Levels/Bar.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Levels/Bar.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bar/Player.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bar/Player.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bar/PlayerInteraction.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bar/PlayerInteraction.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Misc/CameraZoom.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Misc/CameraZoom.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Shop/ScriptableObjects/LuckyStrike.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Shop/ScriptableObjects/LuckyStrike.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Shop/ScriptableObjects/Romeo.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Shop/ScriptableObjects/Romeo.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Shop/ShopItem.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Shop/ShopItem.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Shop/ShopItemSO.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Shop/ShopItemSO.cs" afterDir="false" />
-    </list>
+    <list default="true" id="a3129551-ce2c-411c-ab30-f1926985b011" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -79,7 +69,7 @@
       <workItem from="1792760777238" duration="11770000" />
       <workItem from="1792853736418" duration="1829000" />
       <workItem from="1792931572918" duration="9083000" />
-      <workItem from="1793051244412" duration="2142000" />
+      <workItem from="1793051244412" duration="2789000" />
     </task>
     <servers />
   </component>
