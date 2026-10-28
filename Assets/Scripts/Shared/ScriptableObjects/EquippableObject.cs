@@ -103,6 +103,23 @@ public abstract class EquippableObject : ScriptableObject
     public Sound DrawSound = new();
     public Sound HolsterSound = new();
 
+    [Header("Bag")]
+    [Tooltip("Cells it takes in the bag at the loadout bench, drawn as the bench camera sees it. Left at 0 x 0, it's the box around the model.")]
+    public BagShape BagShape = new();
+
+    // What gets laid in the bag at the loadout bench.
+    public virtual GameObject BagModel => ViewModel;
+
+#if UNITY_EDITOR
+    // Lets the bag redraw while a shape is being drawn in play mode.
+    public static event System.Action OnEdited;
+
+    protected virtual void OnValidate()
+    {
+        OnEdited?.Invoke();
+    }
+#endif
+
     public HeldItem Materialize(Transform root, IWielder wielder)
     {
         HeldItem held = CreateHeld(wielder);

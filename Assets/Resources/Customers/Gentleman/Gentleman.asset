@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fa7f8f51628414aba7e673085fcc771, type: 3}
+  m_Name: Gentleman
+  m_EditorClassIdentifier: 
+  Prefab: {fileID: 6633587777430308873, guid: b6ddaa924f47d4854a6e1f2f66664afc, type: 3}
+  PreferredDays:
+    Monday: 0
+    Tuesday: 1
+    Wednesday: 1
+    Thursday: 1
+    Friday: 1
+    Saturday: 1
+    Sunday: 0
+  aRecipe: 040000000100000003000000
+  sRequest: Hi, I'll have a Bloody Mary
+  sWrongDrink: Not this shit!
+  sSatisfied: It slaps, thanks
+  sClosing: Closing already ??
+  Conversation: {fileID: 11400000, guid: ff258a1dd647a467a96053523b09dd21, type: 2}

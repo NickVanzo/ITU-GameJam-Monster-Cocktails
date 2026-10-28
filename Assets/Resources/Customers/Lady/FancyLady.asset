@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fa7f8f51628414aba7e673085fcc771, type: 3}
+  m_Name: FancyLady
+  m_EditorClassIdentifier: 
+  Prefab: {fileID: 6633587777430308873, guid: 59a62d321e5bf4fc0a47a938f9f50047, type: 3}
+  PreferredDays:
+    Monday: 1
+    Tuesday: 0
+    Wednesday: 0
+    Thursday: 0
+    Friday: 0
+    Saturday: 0
+    Sunday: 1
+  aRecipe: 000000000200000005000000
+  sRequest: I feel cadaveric today, hand me a corpse reviver honey.
+  sWrongDrink: Are u joking?
+  sSatisfied: That hit the spot.
+  sClosing: Closing already ??
+  Conversation: {fileID: 11400000, guid: 6d5283254ae1f4700a890019e4d68b6d, type: 2}

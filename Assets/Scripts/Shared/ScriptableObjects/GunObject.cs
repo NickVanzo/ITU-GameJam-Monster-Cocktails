@@ -74,5 +74,7 @@ public class GunObject : EquippableObject
     public Vector3 vReloadSpinPivot;
     public float fReloadSpinYaw = 25.0f;
 
+    public override GameObject BagModel => DisplayModel != null ? DisplayModel : ViewModel;
+
     protected override HeldItem CreateHeld(IWielder wielder) => new HeldGun(this, wielder);
 }

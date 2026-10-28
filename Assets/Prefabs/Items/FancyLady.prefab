@@ -175,16 +175,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 2471420642917217076}
-  requiredIngredients: 000000000200000005000000
-  requestLine: I feel cadaveric today, hand me a corpse reviver honey.
-  wrongDrinkLine: Are u joking?
-  satisfiedLine: That hit the spot.
   retryDelaySeconds: 3
   satisfiedDisplaySeconds: 2
   dialogueEndDelaySeconds: 2
   dialogueCanvas: {fileID: 6366502705328986319}
   dialogueText: {fileID: 3712062880630475240}
-  startingDialogue: {fileID: 11400000, guid: 6d5283254ae1f4700a890019e4d68b6d, type: 2}
   footstepLength: 0.8
 --- !u!1 &5489048530437813572
 GameObject:

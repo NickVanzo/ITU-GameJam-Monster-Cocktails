@@ -1,66 +1,64 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
+// The body that walks in, orders and talks. Who it is and what it says comes from the CustomerObject it's given.
 public class Customer : MonoBehaviour
 {
     private enum State
     {
         MovingToCounter,
         WaitingForDrink,
+        // Just got a drink and is saying what they think of it.
+        Reacting,
         InDialogue,
         MovingToExit,
         MovingToDespawn
     }
 
+    // Indices into the waypoints CustomerManager hands over.
+    private const int SpawnPoint = 0, CounterPoint = 1, ExitPoint = 2, DespawnPoint = 3;
+
     [SerializeField] private NavMeshAgent agent;
-
-    [Tooltip("0: spawn point, 1: counter/waiting spot, 2: exit transition point, 3: despawn point")]
-    private Transform[] waypoints;
-
-    [SerializeField] private List<IngredientType> requiredIngredients;
-
-    [SerializeField] private string requestLine;
-    [SerializeField] private string wrongDrinkLine;
-    [SerializeField] private string satisfiedLine;
-    [SerializeField] private string closingLine = "Closing already ??";
-    [SerializeField] private float retryDelaySeconds = 5f;
-    [SerializeField] private float satisfiedDisplaySeconds = 2f;
-    [SerializeField] private float dialogueEndDelaySeconds = 2f;
-
     [SerializeField] private GameObject dialogueCanvas;
     [SerializeField] private TMP_Text dialogueText;
 
-    [SerializeField] private Dialogue startingDialogue;
-
+    [SerializeField] private float retryDelaySeconds = 5f;
+    [SerializeField] private float satisfiedDisplaySeconds = 2f;
+    [SerializeField] private float dialogueEndDelaySeconds = 2f;
     [SerializeField] private float footstepLength = 0.8f;
-    
-    public event System.Action<Customer, string> OnSpeak;
 
+    public CustomerObject Data { get; private set; }
+
+    private Transform[] waypoints;
     private State state;
     private Dialogue currentDialogue;
     private float footstepDistance;
 
+    // Called right after spawning, before Start.
+    public void Init(CustomerObject data, Transform[] waypoints)
+    {
+        Data = data;
+        this.waypoints = waypoints;
+    }
+
     // Picks up where BarGameState left off, so a customer served before a trip to another level resumes there.
     void Start()
     {
-        waypoints = CustomerManager.Instance.GetWaypoint();
         dialogueCanvas.SetActive(false);
 
         BarState bar = BarGameState.Bar;
         switch (bar.State)
         {
             case CustomerState.Arriving:
-                transform.position = waypoints[0].position;
                 state = State.MovingToCounter;
-                agent.SetDestination(waypoints[1].position);
+                agent.SetDestination(waypoints[CounterPoint].position);
                 break;
             case CustomerState.WaitingForDrink:
                 PlaceAtCounter();
-                ArriveAtCounter();
+                AskForDrink();
                 break;
             case CustomerState.InDialogue:
                 PlaceAtCounter();
@@ -72,62 +70,56 @@ public class Customer : MonoBehaviour
     // Faces the way it would after walking in from the spawn point.
     private void PlaceAtCounter()
     {
-        agent.Warp(waypoints[1].position);
-        Vector3 walkDirection = Vector3.ProjectOnPlane(waypoints[1].position - waypoints[0].position, Vector3.up);
+        agent.Warp(waypoints[CounterPoint].position);
+        Vector3 walkDirection = Vector3.ProjectOnPlane(waypoints[CounterPoint].position - waypoints[SpawnPoint].position, Vector3.up);
         if (walkDirection.sqrMagnitude > 0.0001f)
         {
             transform.rotation = Quaternion.LookRotation(walkDirection);
         }
     }
 
-    private void ArriveAtCounter()
+    private void AskForDrink()
     {
         state = State.WaitingForDrink;
         BarGameState.Bar.State = CustomerState.WaitingForDrink;
-        Speak(requestLine);
-        CustomerManager.Instance.RegisterActiveCustomer(this);
+        Speak(Data.sRequest);
     }
 
     private void ResumeDialogue(List<int> choices)
     {
-        currentDialogue = startingDialogue;
+        Dialogue dialogue = Data.Conversation;
         foreach (int choice in choices)
         {
-            Dialogue[] next = currentDialogue.nextDialogue;
-            if (next == null || choice >= next.Length || next[choice] == null)
+            Dialogue next = dialogue.Next(choice);
+            if (next == null)
             {
-                Debug.LogError($"Customer '{name}': saved dialogue choice {choice} doesn't exist after '{currentDialogue.name}'. Were the dialogue assets changed? Resuming from '{currentDialogue.name}'.", this);
+                Debug.LogError($"Customer '{Data.name}': saved dialogue choice {choice} doesn't exist after '{dialogue.name}'. Were the dialogue assets changed? Resuming from '{dialogue.name}'.", this);
                 break;
             }
-            currentDialogue = next[choice];
+            dialogue = next;
         }
 
-        state = State.InDialogue;
-        ShowCurrentDialogue();
+        ShowDialogue(dialogue);
     }
 
     void Update()
     {
         UpdateFootsteps();
 
-        if (state == State.WaitingForDrink || state == State.InDialogue)
-        {
-            return;
-        }
-
         if (agent.pathPending || agent.remainingDistance > agent.stoppingDistance)
         {
             return;
         }
 
+        // Only the walking states have somewhere to get to.
         switch (state)
         {
             case State.MovingToCounter:
-                ArriveAtCounter();
+                AskForDrink();
                 break;
             case State.MovingToExit:
                 state = State.MovingToDespawn;
-                agent.SetDestination(waypoints[3].position);
+                agent.SetDestination(waypoints[DespawnPoint].position);
                 break;
             case State.MovingToDespawn:
                 CustomerManager.Instance.NotifyCustomerDespawned();
@@ -143,43 +135,38 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        CustomerManager.Instance.UnregisterActiveCustomer(this);
-
-        if (IsCorrectDrink(servedIngredients))
+        state = State.Reacting;
+        if (Data.Accepts(servedIngredients))
         {
             BarGameState.Bar.State = CustomerState.InDialogue;
             BarGameState.Bar.aChoices.Clear();
             Sfx.Play(Sfx.Sounds.CustomerHappy, transform.position);
-            Speak(satisfiedLine);
+            Speak(Data.sSatisfied);
             StartCoroutine(BeginDialogueAfterDelay());
         }
         else
         {
             Sfx.Play(Sfx.Sounds.CustomerAngry, transform.position);
-            Speak(wrongDrinkLine);
+            Speak(Data.sWrongDrink);
             StartCoroutine(RepeatRequestAfterDelay());
         }
     }
 
+    // Only someone still waiting on a drink leaves, a customer who got theirs finishes the conversation first.
     public void LeaveBar()
     {
-        if (!(state == State.MovingToCounter || state == State.WaitingForDrink) || BarGameState.Bar.State == CustomerState.InDialogue)
+        bool waiting = state == State.MovingToCounter || state == State.WaitingForDrink || state == State.Reacting;
+        if (!waiting || BarGameState.Bar.State == CustomerState.InDialogue)
         {
             return;
         }
 
         // for now just drop everything..
         StopAllCoroutines();
-        
-        CustomerManager.Instance.UnregisterActiveCustomer(this);
-        
+
         BarGameState.Bar.State = CustomerState.Arriving;
-
-        Speak(closingLine);
-
-        state = State.MovingToExit;
-        
-        agent.SetDestination(waypoints[2].position);
+        Speak(Data.sClosing);
+        WalkOut();
     }
 
     private void UpdateFootsteps()
@@ -192,62 +179,40 @@ public class Customer : MonoBehaviour
         }
     }
 
-    private bool IsCorrectDrink(IReadOnlyList<IngredientType> servedIngredients)
-    {
-        if (servedIngredients.Count != requiredIngredients.Count)
-        {
-            return false;
-        }
-
-        foreach (IngredientType required in requiredIngredients)
-        {
-            if (!servedIngredients.Contains(required))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     private IEnumerator RepeatRequestAfterDelay()
     {
         yield return new WaitForSeconds(retryDelaySeconds);
-
-        state = State.WaitingForDrink;
-        CustomerManager.Instance.RegisterActiveCustomer(this);
-        Speak(requestLine);
+        AskForDrink();
     }
 
     private IEnumerator BeginDialogueAfterDelay()
     {
         yield return new WaitForSeconds(satisfiedDisplaySeconds);
-        
-        currentDialogue = startingDialogue;
-        state = State.InDialogue;
-        ShowCurrentDialogue();
+        ShowDialogue(Data.Conversation);
     }
 
-    private void ShowCurrentDialogue()
+    private void ShowDialogue(Dialogue dialogue)
     {
-        dialogueText.text = currentDialogue.text;
-        dialogueCanvas.SetActive(true);
+        state = State.InDialogue;
+        currentDialogue = dialogue;
 
-        if (currentDialogue.options == null || currentDialogue.options.Length == 0)
+        if (dialogue == null)
         {
-            DialogueChoiceUI.Instance.Hide();
             StartCoroutine(EndDialogueAfterDelay());
             return;
         }
 
-        var choiceCallbacks = new UnityEngine.Events.UnityAction[currentDialogue.options.Length];
-        for (int i = 0; i < choiceCallbacks.Length; i++)
-        {
-            int choiceIndex = i;
-            choiceCallbacks[i] = () => SelectDialogueChoice(choiceIndex);
-        }
+        ShowText(dialogue.text);
 
-        DialogueChoiceUI.Instance.Show(currentDialogue.options, choiceCallbacks);
+        if (dialogue.HasOptions)
+        {
+            DialogueChoiceUI.Instance.Show(dialogue.options, SelectDialogueChoice);
+        }
+        else
+        {
+            DialogueChoiceUI.Instance.Hide();
+            StartCoroutine(EndDialogueAfterDelay());
+        }
     }
 
     private void SelectDialogueChoice(int choiceIndex)
@@ -257,28 +222,20 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        Dialogue next = null;
-        if (currentDialogue.nextDialogue != null && choiceIndex < currentDialogue.nextDialogue.Length)
-        {
-            next = currentDialogue.nextDialogue[choiceIndex];
-        }
-
-
+        Dialogue next = currentDialogue.Next(choiceIndex);
         if (next != null)
         {
             BarGameState.Bar.aChoices.Add(choiceIndex);
-            currentDialogue = next;
-            ShowCurrentDialogue();
+            ShowDialogue(next);
+            return;
         }
-        else
+
+        DialogueChoiceUI.Instance.Hide();
+        if (currentDialogue.isFinal)
         {
-            DialogueChoiceUI.Instance.Hide();
-            if (currentDialogue.isFinal)
-            {
-                Sfx.Play(Sfx.Sounds.SoulHarvest, transform.position);
-            }
-            StartCoroutine(EndDialogueAfterDelay());
+            Sfx.Play(Sfx.Sounds.SoulHarvest, transform.position);
         }
+        StartCoroutine(EndDialogueAfterDelay());
     }
 
     private IEnumerator EndDialogueAfterDelay()
@@ -287,17 +244,26 @@ public class Customer : MonoBehaviour
         CustomerManager.Instance.CompleteCurrentCustomer();
 
         yield return new WaitForSeconds(dialogueEndDelaySeconds);
-    
+
         dialogueCanvas.SetActive(false);
+        WalkOut();
+    }
+
+    private void WalkOut()
+    {
         state = State.MovingToExit;
-        agent.SetDestination(waypoints[2].position);
+        agent.SetDestination(waypoints[ExitPoint].position);
     }
 
     private void Speak(string line)
     {
         Sfx.Play(Sfx.Sounds.CustomerSpeak, transform.position);
+        ShowText(line);
+    }
+
+    private void ShowText(string line)
+    {
         dialogueText.text = line;
         dialogueCanvas.SetActive(true);
-        OnSpeak?.Invoke(this, line);
     }
 }

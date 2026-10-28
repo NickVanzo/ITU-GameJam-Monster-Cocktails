@@ -1,5 +1,26 @@
+using System;
 using System.Collections;
 using UnityEngine;
+
+
+[System.Serializable]
+public class TimeState
+{
+    public int nWeek = 1;
+    public Day eDay = 0;
+}
+
+[System.Serializable]
+public enum Day
+{
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday
+}
 
 public enum DayPhase
 {
@@ -7,13 +28,6 @@ public enum DayPhase
     Day,
     Dusk,
     Night
-}
-
-[System.Serializable]
-public class TimeState
-{
-    public int nWeek = 1;
-    public int nDay = 0;
 }
 
 // The clock stops twice a day: at dusk until the bar has been opened by hand and closed again, then at night until
@@ -29,6 +43,7 @@ public class TimeManager : MonoBehaviour
     public static readonly string[] aDayNames = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
     public static bool IsBarOpen => Instance == null || Instance.bBarOpen;
     public static bool ElevatorRuns => Instance == null || Instance.Phase == DayPhase.Night;
+    public static Day Today => Instance != null ? Instance.State.eDay : Day.Monday;
     public event System.Action<DayPhase> OnPhaseChanged;
     public event System.Action OnBarOpened;
 
@@ -37,7 +52,7 @@ public class TimeManager : MonoBehaviour
     [SerializeField] float fDayDuration = 4.0f;
     public TimeState State { get; private set; } = new();
     public DayPhase Phase { get; private set; } = DayPhase.Day;
-    public string DayName => aDayNames[State.nDay];
+    public string DayName => aDayNames[(int) State.eDay];
 
     bool bBarOpen;
 
@@ -106,8 +121,9 @@ public class TimeManager : MonoBehaviour
     public void Load(TimeState state)
     {
         state.nWeek = Mathf.Max(state.nWeek, 1);
-        state.nDay = Mathf.Clamp(state.nDay, 0, aDayNames.Length - 1);
+        state.eDay = (Day) Math.Clamp((int) state.eDay, 0, Enum.GetNames(typeof(Day)).Length - 1);
         State = state;
+
         bBarOpen = false;
 
         StopAllCoroutines();
@@ -156,10 +172,10 @@ public class TimeManager : MonoBehaviour
 
     void AdvanceDay()
     {
-        State.nDay++;
-        if(State.nDay >= aDayNames.Length)
+        State.eDay++;
+        if((int) State.eDay >= Enum.GetNames(typeof(Day)).Length)
         {
-            State.nDay = 0;
+            State.eDay = 0;
             State.nWeek++;
         }
     }

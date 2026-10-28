@@ -17,8 +17,11 @@ MonoBehaviour:
   ViewModel: {fileID: 682051322071174189, guid: 6abfd0f7283a90f409e13ff4c7bac0a2, type: 3}
   vHandOffset: {x: 0, y: -0.193, z: 0.097}
   vHandRotation: {x: 0, y: 0, z: 0}
+  bTwoHanded: 0
   EquipAction: {fileID: 0}
-  eOffhandButton: 1
+  eRepress: 0
+  fHoldToHolster: 0.4
+  eSecondaryButton: 1
   fDrawTime: 0.15
   fLowerDistance: 0.35
   DrawSound:
@@ -37,6 +40,9 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
+  BagShape:
+    vSize: {x: 2, y: 2}
+    aCells: 00010101
   DisplayModel: {fileID: 682051322071174189, guid: 05b209946a9a57a42973611a67c21f48, type: 3}
   fBaseRecoil: 0.8
   aSlots:

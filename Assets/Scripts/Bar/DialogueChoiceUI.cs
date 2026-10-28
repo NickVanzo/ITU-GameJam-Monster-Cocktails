@@ -11,15 +11,15 @@ public class DialogueChoiceUI : MonoBehaviour
     
     [SerializeField] private GameObject tutoral;
 
-    private Button choice1Button;
-    private Button choice2Button;
+    private GameObject[] choices;
+    private Button[] choiceButtons;
 
     void Awake()
     {
         Instance = this;
 
-        choice1Button = choice1.GetComponentInChildren<Button>(true);
-        choice2Button = choice2.GetComponentInChildren<Button>(true);
+        choices = new[] { choice1, choice2 };
+        choiceButtons = System.Array.ConvertAll(choices, choice => choice.GetComponentInChildren<Button>(true));
 
         Hide();
     }
@@ -32,36 +32,34 @@ public class DialogueChoiceUI : MonoBehaviour
         }
     }
 
-    public void Show(string[] optionTexts, UnityEngine.Events.UnityAction[] onChoiceSelected)
+    // Options past the number of buttons are left out.
+    public void Show(string[] optionTexts, System.Action<int> onChoiceSelected)
     {
-        choice1Button.onClick.RemoveAllListeners();
-        choice2Button.onClick.RemoveAllListeners();
-        choice1Button.onClick.AddListener(PlayClickSound);
-        choice2Button.onClick.AddListener(PlayClickSound);
-
-        bool hasFirst = optionTexts.Length > 0;
-        bool hasSecond = optionTexts.Length > 1;
-
-        choice1.SetActive(hasFirst);
-        choice2.SetActive(hasSecond);
-
-        if (hasFirst)
+        for (int i = 0; i < choices.Length; i++)
         {
-            choice1Button.GetComponentInChildren<TMP_Text>().text = optionTexts[0];
-            choice1Button.onClick.AddListener(onChoiceSelected[0]);
-        }
+            bool hasOption = i < optionTexts.Length;
+            choices[i].SetActive(hasOption);
 
-        if (hasSecond)
-        {
-            choice2Button.GetComponentInChildren<TMP_Text>().text = optionTexts[1];
-            choice2Button.onClick.AddListener(onChoiceSelected[1]);
+            Button button = choiceButtons[i];
+            button.onClick.RemoveAllListeners();
+            if (!hasOption)
+            {
+                continue;
+            }
+
+            int choiceIndex = i;
+            button.GetComponentInChildren<TMP_Text>().text = optionTexts[i];
+            button.onClick.AddListener(PlayClickSound);
+            button.onClick.AddListener(() => onChoiceSelected(choiceIndex));
         }
     }
 
     public void Hide()
     {
-        choice1.SetActive(false);
-        choice2.SetActive(false);
+        foreach (GameObject choice in choices)
+        {
+            choice.SetActive(false);
+        }
     }
 
     private static void PlayClickSound()

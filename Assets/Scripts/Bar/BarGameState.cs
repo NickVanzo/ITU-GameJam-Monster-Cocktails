@@ -11,10 +11,10 @@ public enum CustomerState
 [System.Serializable]
 public class BarState
 {
-    // Index into CustomerManager's customer list of the customer currently being served.
-    public int nCustomer;
-    // Customers done since the bar door opened in the eveming
-    public int nServedTonight;
+    // Tonight's customers still to come, as indices into CustomerManager's customer list. The first one is being served.
+    public List<int> aQueue = new();
+    // Customers whose conversation is over. They don't come back.
+    public List<int> aDone = new();
     public CustomerState State;
     // Options picked since the customer's starting dialogue, replayed to get back to the same line.
     public List<int> aChoices = new();

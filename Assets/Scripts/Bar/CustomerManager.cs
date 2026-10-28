@@ -1,27 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class CustomerManager : MonoBehaviour
 {
     public static CustomerManager Instance { get; private set; }
 
+    // The customer in the bar, from walking in until they're out the door again.
     public Customer ActiveCustomer { get; private set; }
+    public bool HasCustomerInside => ActiveCustomer != null;
 
     [Tooltip("0: spawn point, 1: counter/waiting spot, 2: exit transition point, 3: despawn point")]
     [SerializeField] private Transform[] waypoints;
 
-    [SerializeField] private List<GameObject> customerPrefabs;
+    [Tooltip("Everyone who can come in. BarGameState keeps them by index, so add to the end rather than reordering.")]
+    [SerializeField] private List<CustomerObject> aCustomers;
     [SerializeField] private float delayBetweenCustomers = 3f;
+    [SerializeField] private int customersPerEvening = 3;
 
     [SerializeField] private GameObject gameOverCanvas;
     [SerializeField] private PlayerInteraction playerInteraction;
-
-    [SerializeField] private int customersPerEvening = 3;
-
-    public bool HasCustomerInside => currentCustomer != null;
-    private Customer currentCustomer;
 
     void Awake()
     {
@@ -55,22 +54,49 @@ public class CustomerManager : MonoBehaviour
 
         if (TimeManager.IsBarOpen)
         {
+            // Only without a TimeManager, where the bar is always open and never got an evening to plan.
+            if (BarGameState.Bar.aQueue.Count == 0)
+            {
+                ScheduleCustomers();
+            }
             SpawnNextCustomer();
         }
     }
 
+    // Picks up to customersPerEvening of those not done yet, the ones who like today best being the likeliest.
+    private void ScheduleCustomers()
+    {
+        BarState bar = BarGameState.Bar;
+        Day today = TimeManager.Today;
+
+        // Someone the bar unloaded on mid-visit comes back first to finish it.
+        int heldOver = bar.State != CustomerState.Arriving && bar.aQueue.Count > 0 ? bar.aQueue[0] : -1;
+
+        // Weighted pick without replacement: random^(1/weight) sorts heavier weights to the front more often.
+        IEnumerable<int> picks = Enumerable.Range(0, aCustomers.Count)
+            .Where(i => i != heldOver && !bar.aDone.Contains(i) && aCustomers[i].PreferredDays[today] > 0f)
+            .OrderByDescending(i => Mathf.Pow(Random.value, 1f / aCustomers[i].PreferredDays[today]));
+
+        if (heldOver >= 0)
+        {
+            picks = picks.Prepend(heldOver);
+        }
+
+        bar.aQueue = picks.Take(customersPerEvening).ToList();
+    }
+
     private void HandleBarOpened()
     {
-        BarGameState.Bar.nServedTonight = 0;
+        ScheduleCustomers();
         StartCoroutine(SpawnNextCustomerAfterDelay());
     }
 
     private void HandlePhaseChanged(DayPhase phase)
     {
         // Bar closing
-        if (phase == DayPhase.Night && currentCustomer != null)
+        if (phase == DayPhase.Night && ActiveCustomer != null)
         {
-            currentCustomer.LeaveBar();
+            ActiveCustomer.LeaveBar();
         }
     }
 
@@ -80,37 +106,22 @@ public class CustomerManager : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.LoadScene(0);
     }
 
-    public void RegisterActiveCustomer(Customer customer)
-    {
-        ActiveCustomer = customer;
-    }
-
-    public void UnregisterActiveCustomer(Customer customer)
-    {
-        if (ActiveCustomer == customer)
-        {
-            ActiveCustomer = null;
-        }
-    }
-
     // Moves the queue on to the next customer. The finished one can still walk out, but won't come back after a trip.
     public void CompleteCurrentCustomer()
     {
         BarState bar = BarGameState.Bar;
-        bar.nCustomer++;
-        bar.nServedTonight++;
+        if (bar.aQueue.Count > 0)
+        {
+            bar.aDone.Add(bar.aQueue[0]);
+            bar.aQueue.RemoveAt(0);
+        }
         bar.State = CustomerState.Arriving;
         bar.aChoices.Clear();
     }
 
-    public Transform[] GetWaypoint()
-    {
-        return waypoints;
-    }
-
     public void NotifyCustomerDespawned()
     {
-        currentCustomer = null;
+        ActiveCustomer = null;
         StartCoroutine(SpawnNextCustomerAfterDelay());
     }
 
@@ -129,22 +140,22 @@ public class CustomerManager : MonoBehaviour
         }
 
         BarState bar = BarGameState.Bar;
-        if (customerPrefabs.Count == 0 || bar.nCustomer >= customerPrefabs.Count)
+        if (bar.aDone.Count >= aCustomers.Count)
         {
-            Debug.Log("no more customers for the day");
             gameOverCanvas.SetActive(true);
             playerInteraction.enabled = false;
             return;
         }
 
-        if (bar.nServedTonight >= customersPerEvening)
+        // Everyone due tonight has been, the bar can close.
+        if (bar.aQueue.Count == 0)
         {
-            Debug.Log("last customer of the evening is gone, the bar can close");
             return;
         }
 
-        GameObject prefab = customerPrefabs[bar.nCustomer];
-        currentCustomer = Instantiate(prefab, waypoints[0].position, waypoints[0].rotation).GetComponent<Customer>();
+        CustomerObject data = aCustomers[bar.aQueue[0]];
+        ActiveCustomer = Instantiate(data.Prefab, waypoints[0].position, waypoints[0].rotation);
+        ActiveCustomer.Init(data, waypoints);
 
         if (bar.State == CustomerState.Arriving)
         {

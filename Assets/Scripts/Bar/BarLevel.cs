@@ -59,7 +59,8 @@ public class BarLevel : MonoBehaviour, ILevel
 
     public void Leave()
     {
-        if(!TimeManager.ElevatorRuns)
+        // The bag at the loadout bench has to close before going down.
+        if(!TimeManager.ElevatorRuns || !Loadout.bFitsBag)
         {
             Sfx.Play(Sfx.Sounds.OutOfStock);
             return;
