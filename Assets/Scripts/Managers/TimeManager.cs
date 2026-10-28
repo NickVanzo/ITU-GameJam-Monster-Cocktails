@@ -117,6 +117,7 @@ public class TimeManager : MonoBehaviour
         StartCoroutine(StartDay());
     }
 
+    // Should probably move out of these coroutines tbh
     IEnumerator StartNight()
     {
         yield return new WaitForSeconds(fNightDuration);
@@ -142,6 +143,15 @@ public class TimeManager : MonoBehaviour
         yield return new WaitForSeconds(fDayDuration);
 
         SetPhase(DayPhase.Dusk);
+    }
+
+    [Tweak("Time")]
+    public static void SkipDay()
+    {
+        Instance.AdvanceDay();
+        Instance.SetPhase(DayPhase.Dawn);
+        Instance.StopAllCoroutines();
+        Instance.StartCoroutine(Instance.StartDawn());
     }
 
     void AdvanceDay()
