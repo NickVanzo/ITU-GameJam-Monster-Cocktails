@@ -36,7 +36,7 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         // The bench panels own interactions while they are open.
-        if (player != null && (player.CurrentRoom == Rooms.Workbench || player.CurrentRoom == Rooms.Loadout))
+        if (player != null && player.Engaged)
         {
             UpdateHoveredItem(null);
             return;
@@ -213,11 +213,10 @@ public class PlayerInteraction : MonoBehaviour
         EndInspection();
     }
 
+    // TODO : proper layer mask for this
     private bool TryRaycastFromCursor(out RaycastHit hit)
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        // Ignore triggers so volume bounds and other trigger zones don't block clicks.
-        return Physics.Raycast(ray, out hit, interactionDistance,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+        return Physics.Raycast(ray, out hit, interactionDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
     }
 }

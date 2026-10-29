@@ -6,6 +6,8 @@ public class LoadoutBench : MonoBehaviour
     const string BackLink = "back";
 
     public Player Player;
+    public ViewSpot Spot;
+    public ArmoryDisplay Rack;
 
     [Tooltip("The LoadoutPanel, only shown at the bench. Its back button is a clickable <link> tag, so keep it on a Screen Space canvas.")]
     public GameObject UIWindow;
@@ -14,7 +16,7 @@ public class LoadoutBench : MonoBehaviour
 
     public bool IsOpen()
     {
-        return Player.CurrentRoom == Rooms.Loadout;
+        return Player.IsEngagedAt(Spot);
     }
 
     void Awake()
@@ -25,21 +27,7 @@ public class LoadoutBench : MonoBehaviour
 
     public void Open()
     {
-        if(IsOpen())
-        {
-            return;
-        }
-
-        Player.GoToRoom(Rooms.Loadout);
-        Refresh();
-    }
-
-    public void Close()
-    {
-        if(IsOpen())
-        {
-            Player.GoToRoom(Rooms.Kitchen);
-        }
+        Player.Engage(Spot);
     }
 
     void Update()
@@ -49,6 +37,7 @@ public class LoadoutBench : MonoBehaviour
         if(UIWindow.activeSelf != bOpen)
         {
             UIWindow.SetActive(bOpen);
+            Refresh();
         }
 
         if(!bOpen)
@@ -56,15 +45,17 @@ public class LoadoutBench : MonoBehaviour
             return;
         }
 
-        if(Input.GetKeyDown(KeyCode.Escape))
+        bool bUp = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
+        bool bDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
+        if(bUp != bDown)
         {
-            Close();
-            return;
+            Rack.Step(bDown ? 1 : -1);
+            Refresh();
         }
 
         if(Input.GetMouseButtonDown(0) && m_Panel.FindLinkUnderCursor() == BackLink)
         {
-            Close();
+            Player.Move(BarMovementDirections.Down);
         }
     }
 

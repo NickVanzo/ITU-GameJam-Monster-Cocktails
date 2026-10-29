@@ -8,6 +8,7 @@ public class BarLevel : MonoBehaviour, ILevel
 {
     public Camera BarCamera;
     public Player Player;
+    public ViewSpot ArrivalSpot;
     [Tooltip("The elevator in the bar - Elevator sounds come from here while the camera sinks or rises")]
     public Transform BarElevator;
 
@@ -40,7 +41,7 @@ public class BarLevel : MonoBehaviour, ILevel
             }
 
             // The elevator is in the kitchen, next to the armory, so that's where the player comes back up.
-            Player.SnapToRoom(Rooms.Kitchen);
+            Player.SnapTo(ArrivalSpot);
             yield return RaiseCamera();
         }
         else

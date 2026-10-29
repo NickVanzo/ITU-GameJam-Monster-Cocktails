@@ -40,6 +40,9 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
+  BagShape:
+    vSize: {x: 4, y: 2}
+    aCells: 0000010101010101
   DisplayModel: {fileID: 1273483598709244680, guid: 25d13f9302644acbbe70ca93bac69c37, type: 3}
   fBaseRecoil: 0.15
   aSlots: []

@@ -8,6 +8,7 @@ public class Workbench : MonoBehaviour
     const string BackLink = "back";
 
     public Player Player;
+    public ViewSpot Spot;
     [Tooltip("The guns that can be refitted here, browsed with the gun row.")]
     public GunObject[] aGuns;
     [Tooltip("The gun lying on the bench.")]
@@ -23,7 +24,7 @@ public class Workbench : MonoBehaviour
 
     public bool IsOpen()
     {
-        return Player.CurrentRoom == Rooms.Workbench;
+        return Player.IsEngagedAt(Spot);
     }
 
     GunObject GetFrame()
@@ -51,41 +52,22 @@ public class Workbench : MonoBehaviour
 
     public void Open()
     {
-        if(IsOpen())
-        {
-            return;
-        }
-
-        m_nRow = 0;
-        Player.GoToRoom(Rooms.Workbench);
-        Refresh();
-    }
-
-    public void Close()
-    {
-        if(IsOpen())
-        {
-            Player.GoToRoom(Rooms.Kitchen);
-        }
+        Player.Engage(Spot);
     }
 
     void Update()
     {
         bool bOpen = IsOpen();
 
-        if(UIWindow.gameObject.activeSelf != bOpen)
+        if(UIWindow.activeSelf != bOpen)
         {
-            UIWindow.gameObject.SetActive(bOpen);
+            UIWindow.SetActive(bOpen);
+            m_nRow = 0;
+            Refresh();
         }
 
         if(!bOpen)
         {
-            return;
-        }
-
-        if(Input.GetKeyDown(KeyCode.Escape))
-        {
-            Close();
             return;
         }
 
@@ -120,7 +102,7 @@ public class Workbench : MonoBehaviour
 
         if(sLink == BackLink)
         {
-            Close();
+            Player.Move(BarMovementDirections.Down);
             return;
         }
 

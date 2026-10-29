@@ -16,7 +16,6 @@ public class ArmoryDisplay : MonoBehaviour
         public GunObject Definition;
     }
 
-    public Player Player;
     public Gun[] aGuns;
 
     [SerializeField] float fSpinSpeed = 60.0f;
@@ -42,28 +41,12 @@ public class ArmoryDisplay : MonoBehaviour
 
     void Update()
     {
-        if(Player.CurrentRoom == Rooms.Kitchen)
-        {
-            HandleScrollKeys();
-        }
-
         if(SelectedGun != null)
         {
             SelectedGun.Pivot.Rotate(0.0f, fSpinSpeed * Time.deltaTime, 0.0f);
         }
     }
 
-    void HandleScrollKeys()
-    {
-        bool bUp = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
-        bool bDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
-        int nStep = (bDown ? 1 : 0) - (bUp ? 1 : 0);
-
-        if(nStep != 0)
-        {
-            Step(nStep);
-        }
-    }
     public void Step(int nStep)
     {
         if(aGuns.Length > 1)

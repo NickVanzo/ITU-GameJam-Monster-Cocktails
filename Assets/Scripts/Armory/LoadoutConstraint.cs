@@ -117,7 +117,7 @@ public class LoadoutConstraint : MonoBehaviour
     // Numbers the cells left to right and top to bottom as the bench camera sees them, the same way shapes are drawn.
     void FaceBenchCamera()
     {
-        Transform view = m_Bench != null && m_Bench.Player != null ? m_Bench.Player.loadoutCameraPosition : null;
+        Transform view = m_Bench != null && m_Bench.Spot != null ? m_Bench.Spot.Anchor : null;
         if(view == null)
         {
             return;

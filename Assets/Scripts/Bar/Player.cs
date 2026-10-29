@@ -1,13 +1,10 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public enum Rooms {
     MainRoom,
     Kitchen,
-    Workbench,
-    Loadout,
     Shop
 }
 
@@ -21,18 +18,9 @@ public enum BarMovementDirections
 
 public class Player : MonoBehaviour
 {
-    private Rooms currentRoom;
-    public Rooms CurrentRoom => currentRoom;
     public Transform mainCamera;
-    public Transform kitchenCameraPosition;
-    public Transform customersCameraPosition;
-    [Tooltip("Where the camera sits at the workbench. Its rotation is used too: frame the bench in the Scene view, then GameObject > Align With View.")]
-    public Transform workbenchCameraPosition;
-    public Transform loadoutCameraPosition;
-    public ShopPointOfInterest centralPointOfInterest;
-    public ShopPointOfInterest currentPointOfInterest;
+    public ViewSpot startSpot;
 	public Transform inpectItemTransform;
-    public Transform shopCameraPosition;
     public float movementSpeed = 10.0f;
     public AnimationCurve Curve;
 
@@ -40,12 +28,16 @@ public class Player : MonoBehaviour
     [SerializeField] private Button goRightUIButton;
     [SerializeField] private Button goUpUIButton;
     [SerializeField] private Button goDownUIButton;
+    private ViewSpot currentSpot;
+    private bool engaged;
+    private int engagedFrame;
     private Coroutine transitionCoroutine;
     private BarCamera barCamera;
-    public bool zoomedInShop = false;
-    public TMP_Text itemInteractionGuide;
 
-    // Awake, not Start: the bar keeps this disabled while the camera rises, and a late Start would undo SnapToRoom.
+    public ViewSpot CurrentSpot => currentSpot;
+    public Rooms CurrentRoom => currentSpot.Room;
+    public bool Engaged => engaged;
+
     void Awake()
     {
 #if UNITY_EDITOR
@@ -56,243 +48,149 @@ public class Player : MonoBehaviour
 #endif
 
         barCamera = mainCamera.GetComponent<BarCamera>();
-        SnapToRoom(Rooms.MainRoom);
-        
-        goLeftUIButton.onClick.AddListener(() => ChangeRoom(BarMovementDirections.Left));
-        goRightUIButton.onClick.AddListener(() => ChangeRoom(BarMovementDirections.Right));
-        goUpUIButton.onClick.AddListener(() => HandleShopZoom());
-        goDownUIButton.onClick.AddListener(() => HandleShopZoom());
 
-		itemInteractionGuide.gameObject.SetActive(false);
+        goLeftUIButton.onClick.AddListener(() => Move(BarMovementDirections.Left));
+        goRightUIButton.onClick.AddListener(() => Move(BarMovementDirections.Right));
+        goUpUIButton.onClick.AddListener(() => Move(BarMovementDirections.Up));
+        goDownUIButton.onClick.AddListener(() => Move(BarMovementDirections.Down));
 
-        RefreshRoomButtons();
-    }
-
-    public void SnapToRoom(Rooms room)
-    {
-        if (transitionCoroutine != null)
-            StopCoroutine(transitionCoroutine);
-
-        currentRoom = room;
-        zoomedInShop = false;
-        Transform target = CameraPositionFor(room);
-        SetCameraPose(target.position, target.rotation);
-        RefreshRoomButtons();
+        SnapTo(startSpot);
     }
 
     void Update()
     {
-        HandleRoomKeys();
-		itemInteractionGuide.gameObject.SetActive(zoomedInShop && currentPointOfInterest != centralPointOfInterest);
-    }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {            
+            Move(BarMovementDirections.Down);
+        }
 
-    // The shop is to the left of the customer area and the kitchen to its right, so A/Left and D/Right slide the camera that way.
-    private void HandleRoomKeys()
-    {
-        // The benches handle their own keys while open, e.g. the workbench browses guns and attachments with these.
-        if (currentRoom == Rooms.Workbench || currentRoom == Rooms.Loadout)
+        if (engaged)
             return;
 
-        bool left = Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow);
-        bool right = Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow);
-        bool up = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
-        bool down = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
-
-        if (currentRoom == Rooms.Shop)
+        //todo: Change with proper unity input
+        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (up || down)
-            {
-                HandleShopZoom();
-                return;
-            }
-
-            if (zoomedInShop)
-            {
-                if (left)
-                {
-                    HandleShopMovement(BarMovementDirections.Left);    
-                }
-
-                if (right)
-                {
-                    HandleShopMovement(BarMovementDirections.Right);
-                }
-                return;
-            }
+            Move(BarMovementDirections.Left);            
         }
-
-        if (!left && !right) return;
-        if (left && currentRoom == Rooms.Shop || right && currentRoom == Rooms.Kitchen) return;
-
-        Rooms newRoom = currentRoom;
-        if (currentRoom == Rooms.MainRoom)
+        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
-            newRoom = left ? Rooms.Shop : Rooms.Kitchen;
+            Move(BarMovementDirections.Right);
         }
-
-        if (currentRoom == Rooms.Shop)
+        else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))   
         {
-            newRoom = Rooms.MainRoom;
+            Move(BarMovementDirections.Up);
         }
-
-        if (currentRoom == Rooms.Kitchen)
-        {
-            newRoom = Rooms.MainRoom;
+        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow))
+        {            
+            Move(BarMovementDirections.Down);
         }
-
-        GoToRoom(newRoom);
     }
 
-    public void HandleShopZoom()
+    public void Move(BarMovementDirections direction)
     {
-        zoomedInShop = !zoomedInShop;
-        // Stop any ongoing move coroutine before starting a new one
+        if (engaged)
+        {
+            if (direction == BarMovementDirections.Down)
+            {
+                SetEngaged(false);                
+            }
+            return;
+        }
+
+        if (direction == BarMovementDirections.Up && currentSpot.bEngageable)
+        {
+            SetEngaged(true);
+            return;
+        }
+
+        ViewSpot next = currentSpot.Neighbour(direction);
+        if (next != null)
+            GoTo(next);
+    }
+
+    public void Engage(ViewSpot spot)
+    {
+        GoTo(spot);
+        SetEngaged(true);
+    }
+
+    public bool IsEngagedAt(ViewSpot spot)
+    {
+        return engaged && currentSpot == spot && Time.frameCount > engagedFrame;
+    }
+
+    public void GoTo(ViewSpot spot)
+    {
+        if (spot == currentSpot)
+            return;
+
+        if (spot.Room != currentSpot.Room)
+            Sfx.Play(Sfx.Sounds.RoomSwitch);
+
+        Focus(spot);
+
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
 
-        transitionCoroutine = StartCoroutine(MoveCameraTo(zoomedInShop ? centralPointOfInterest.playerPointOfView : shopCameraPosition));
-        if (!zoomedInShop && currentPointOfInterest != null)
-        {
-            currentPointOfInterest.OnPlayerUnfocus();
-        }
-        currentPointOfInterest = centralPointOfInterest;
-        RefreshRoomButtons();		
+        transitionCoroutine = StartCoroutine(MoveCameraTo(spot.Anchor));
     }
 
-    public void HandleShopMovement(BarMovementDirections movDir)
+    public void SnapTo(ViewSpot spot)
     {
-        Transform nextCameraPosition = null;
-        if (movDir == BarMovementDirections.Left)
-        {
-            if (currentPointOfInterest.prev != null)
-            {
-                currentPointOfInterest.OnPlayerUnfocus();    
-                currentPointOfInterest = currentPointOfInterest.prev;
-                currentPointOfInterest.OnPlayerFocus();
-
-                nextCameraPosition = currentPointOfInterest.playerPointOfView;
-            }
-            else
-            {
-                currentPointOfInterest.OnPlayerUnfocus();
-                
-                currentPointOfInterest = centralPointOfInterest;
-                nextCameraPosition = currentPointOfInterest.playerPointOfView;
-            }
-        }
-        else if(movDir == BarMovementDirections.Right)
-        {
-            if (currentPointOfInterest.next != null)
-            {
-                currentPointOfInterest.OnPlayerUnfocus();
-                currentPointOfInterest = currentPointOfInterest.next;
-                currentPointOfInterest.OnPlayerFocus();
-
-                nextCameraPosition = currentPointOfInterest.playerPointOfView;
-            }
-            else
-            {
-                currentPointOfInterest.OnPlayerUnfocus();
-                currentPointOfInterest = centralPointOfInterest;
-                nextCameraPosition = currentPointOfInterest.playerPointOfView;
-            }
-        }
-
-        if (transitionCoroutine != null)
-            StopCoroutine(transitionCoroutine);
-        
-        transitionCoroutine = StartCoroutine(MoveCameraTo(nextCameraPosition ?? currentPointOfInterest.playerPointOfView));
-    }
-
-    private void ChangeRoom(BarMovementDirections dir)
-    {
-        if (dir != BarMovementDirections.Right && dir != BarMovementDirections.Left) return; // rooms are not up/down 
-        
-        if (zoomedInShop)
-        {
-            HandleShopMovement(dir);
-            return;
-        }
-        Rooms newRoom = currentRoom;
-        if (dir == BarMovementDirections.Left)
-        {
-            newRoom = currentRoom == Rooms.MainRoom ? Rooms.Shop : Rooms.MainRoom;
-        }
-        else
-        {
-            newRoom = currentRoom == Rooms.Shop ? Rooms.MainRoom : Rooms.Kitchen;
-        }
-        GoToRoom(newRoom);
-    }
-
-    public void GoToRoom(Rooms room)
-    {
-        if (room == currentRoom)
-            return;
-
-        currentRoom = room;
-        zoomedInShop = false;
-        Sfx.Play(Sfx.Sounds.RoomSwitch);
-
-        // Stop any ongoing move coroutine before starting a new one
         if (transitionCoroutine != null)
             StopCoroutine(transitionCoroutine);
 
-        transitionCoroutine = StartCoroutine(MoveCameraTo(CameraPositionFor(room)));
-        RefreshRoomButtons();
+        Focus(spot);
+        SetCameraPose(spot.Anchor.position, spot.Anchor.rotation);
     }
 
-    // Each anchor's rotation is the view from that spot, so the camera faces wherever the anchor faces.
-    private Transform CameraPositionFor(Rooms room)
+    private void Focus(ViewSpot spot)
     {
-        switch (room)
-        {
-            case Rooms.Kitchen: 
-                return kitchenCameraPosition;
-            case Rooms.Workbench: 
-                return workbenchCameraPosition;
-            case Rooms.Loadout: 
-                return loadoutCameraPosition;
-            case Rooms.Shop: 
-                return shopCameraPosition;
-            default: 
-                return customersCameraPosition;
-        }
+        if (currentSpot != null)
+            currentSpot.OnUnfocus.Invoke();
+
+        currentSpot = spot;
+        engaged = false;
+        currentSpot.OnFocus.Invoke();
+        RefreshButtons();
     }
 
-    private void RefreshRoomButtons()
+    private void SetEngaged(bool value)
     {
-        if (!zoomedInShop)
-        {
-            goLeftUIButton.gameObject.SetActive(currentRoom == Rooms.Kitchen || currentRoom == Rooms.MainRoom);
-            goRightUIButton.gameObject.SetActive(currentRoom == Rooms.MainRoom || currentRoom == Rooms.Shop);
-            goUpUIButton.gameObject.SetActive(currentRoom == Rooms.Shop);
-            goDownUIButton.gameObject.SetActive(false);
-        }
-        else
-        {
-            goLeftUIButton.gameObject.SetActive(true);
-            goRightUIButton.gameObject.SetActive(true);
-            goDownUIButton.gameObject.SetActive(true);
-            goUpUIButton.gameObject.SetActive(false);
-        }
-        
+        engaged = value;
+        engagedFrame = Time.frameCount;
+        RefreshButtons();
     }
 
+    private void RefreshButtons()
+    {
+        goLeftUIButton.gameObject.SetActive(CanMove(BarMovementDirections.Left));
+        goRightUIButton.gameObject.SetActive(CanMove(BarMovementDirections.Right));
+        goUpUIButton.gameObject.SetActive(CanMove(BarMovementDirections.Up));
+        goDownUIButton.gameObject.SetActive(CanMove(BarMovementDirections.Down));
+    }
+
+    private bool CanMove(BarMovementDirections direction)
+    {
+        return !engaged && (currentSpot.Neighbour(direction) != null || direction == BarMovementDirections.Up && currentSpot.bEngageable);
+    }
+
+    // todo : fucking coroutines man lmao
     private IEnumerator MoveCameraTo(Transform target)
     {
         Vector3 startPosition = mainCamera.position;
         Quaternion startRotation = barCamera != null ? barCamera.BaseRotation : mainCamera.rotation;
+        
         float progress = 0f;
         while (progress < 1f && movementSpeed > 0f)
         {
             progress = Mathf.Clamp01(progress + movementSpeed * Time.deltaTime);
             float blend = Curve.Evaluate(progress);
 
-            // Turns along the way, so it faces the new spot as it arrives.
             SetCameraPose(
-                Vector3.Lerp(startPosition, target.position, blend),
-                Quaternion.Slerp(startRotation, target.rotation, blend));
+                Vector3.Lerp(startPosition, target.position, blend), 
+                Quaternion.Slerp(startRotation, target.rotation, blend)
+            );
 
             yield return null;
         }
@@ -304,10 +202,12 @@ public class Player : MonoBehaviour
     {
         mainCamera.SetPositionAndRotation(position, rotation);
         if (barCamera != null)
+        {
             barCamera.SetBaseRotation(rotation);
+        }
     }
 
 	public bool LockCameraZoom() {
-		return zoomedInShop; 
+		return currentSpot.Parent != null;
 	}
 }
