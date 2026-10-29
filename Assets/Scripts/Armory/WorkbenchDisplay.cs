@@ -40,12 +40,11 @@ public class WorkbenchDisplay : MonoBehaviour
         }
 
         m_Frame = frame;
-        GameObject prefab = frame != null && frame.DisplayModel != null ? frame.DisplayModel : PlaceHolderModel;
-
-        var holder = new GameObject(prefab.name);
+        bool bPresentable = frame != null && frame.PresentationModel != null;
+        var holder = new GameObject(bPresentable ? frame.name : PlaceHolderModel.name);
         holder.transform.SetParent(transform, false);
 
-        Transform model = Instantiate(prefab, holder.transform, false).transform;
+        Transform model = bPresentable ? frame.SpawnPresentation(holder.transform) : Instantiate(PlaceHolderModel, holder.transform, false).transform;
         Bounds bounds = MeshUtil.MeshBounds(model, holder.transform);
         model.localPosition -= bounds.center;
 

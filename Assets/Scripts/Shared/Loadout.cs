@@ -54,10 +54,10 @@ public static class Loadout
 {
     public static GunObject Frame;
     public static readonly List<EquippableObject> Offhand = new();
-    // One per carried item, in GetCarried order. The bag at the loadout bench packs anything new.
-    public static readonly List<BagSlot> Packing = new();
+    public static readonly Dictionary<EquippableObject, BagSlot> Packing = new();
     // Kept up to date by the bag. The elevator won't go down while something sticks out or overlaps.
-    public static bool bFitsBag = true;
+    public static readonly HashSet<EquippableObject> Unfit = new();
+    public static bool bFitsBag => Unfit.Count == 0;
     static readonly Dictionary<(GunObject, GunSlot), GunAttachment> s_GunModsDictionary = new();
     public static GunAttachment GetFitted(GunObject frame, GunSlotDefinition slot)
     {
@@ -101,12 +101,42 @@ public static class Loadout
         }
     }
 
+    public static bool IsCarried(EquippableObject item)
+    {
+        return item == Frame || Offhand.Contains(item);
+    }
+
+    public static void Add(EquippableObject item)
+    {
+        if(Frame == null && item is GunObject frame)
+        {
+            Frame = frame;
+        }
+        else
+        {
+            Offhand.Add(item);
+        }
+    }
+
+    public static void Remove(EquippableObject item)
+    {
+        Offhand.Remove(item);
+        Packing.Remove(item);
+        Unfit.Remove(item);
+
+        if(item == Frame)
+        {
+            Frame = Offhand.Find(other => other is GunObject) as GunObject;
+            Offhand.Remove(Frame);
+        }
+    }
+
     public static void Clear()
     {
         Frame = null;
         Offhand.Clear();
         Packing.Clear();
-        bFitsBag = true;
+        Unfit.Clear();
         s_GunModsDictionary.Clear();
     }
 }

@@ -196,7 +196,7 @@ public class FPSController : IDamageable, IWielder
         m_aCarried.Add(frame.Materialize(m_RightHand.Root, this));
         if(LeftHandRoot != null)
         {
-            foreach(EquippableObject item in Loadout.Offhand.Count > 0 ? Loadout.Offhand : OffhandItems)
+            foreach(EquippableObject item in Loadout.Frame != null || Loadout.Offhand.Count > 0 ? Loadout.Offhand : OffhandItems)
             {
                 if(item != null)
                 {

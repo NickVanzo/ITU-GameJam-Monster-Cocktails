@@ -14,12 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FlashlightObject
   sId: flashlight_01
   sDisplayName: FLASHLIGHT
-  ViewModel: {fileID: 1167259632974843931, guid: 715b056be22e9d546a43535f80e7c4f9, type: 3}
+  ViewModel: {fileID: 1167259632974843931, guid: 622ba63b2668cee459b93dbe9c3ffb0f, type: 3}
+  DisplayModel: {fileID: 1167259632974843931, guid: 715b056be22e9d546a43535f80e7c4f9, type: 3}
   vHandOffset: {x: 0, y: 0, z: 0}
   vHandRotation: {x: 0, y: 0, z: 0}
+  bTwoHanded: 0
   EquipAction: {fileID: 5329026276540904371, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   eRepress: 1
-  eOffhandButton: 0
+  fHoldToHolster: 0.4
+  eSecondaryButton: 0
   fDrawTime: 0.15
   fLowerDistance: 0.35
   DrawSound:
@@ -38,6 +41,9 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
+  BagShape:
+    vSize: {x: 0, y: 0}
+    aCells: 
   fRange: 30
   fAngle: 90
   fIntensity: 5

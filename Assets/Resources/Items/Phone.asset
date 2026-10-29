@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PhoneObject
   sId: phone_01
   sDisplayName: PHONE
-  ViewModel: {fileID: 4630171903749997650, guid: 42b8a9be705d7b947b6e09d1c438fd59, type: 3}
+  ViewModel: {fileID: 4630171903749997650, guid: 6e3c85a6406a9cb47b80b71e33fd3a03, type: 3}
+  DisplayModel: {fileID: 4630171903749997650, guid: 8a7ed1b501d575c43b2c1e0485745354, type: 3}
   vHandOffset: {x: 0, y: -0.1, z: 0.097}
   vHandRotation: {x: 0, y: 225, z: 0}
   bTwoHanded: 0
@@ -40,6 +41,9 @@ MonoBehaviour:
     MaxDistance: 25
     MaxInstances: 0
     RestartWhenFull: 0
+  BagShape:
+    vSize: {x: 0, y: 0}
+    aCells: 
   sLidName: Phone_top
   sHingeName: Middle_Hinge
   fClosedAngle: 150

@@ -6,8 +6,6 @@ public class ViewSpot : MonoBehaviour
     public Rooms eRoom;
     public Transform CameraAnchor;
     public ViewSpot Entry;
-    // TODO : This is kind of a vague shit compromise
-    public bool bEngageable;
     public UnityEvent OnFocus;
     public UnityEvent OnUnfocus;
 
@@ -58,8 +56,9 @@ public class ViewSpot : MonoBehaviour
             Gizmos.DrawLine(Anchor.position, parent.Anchor.position);
         }
 
+        Camera camera = Camera.main;
         Gizmos.matrix = Anchor.localToWorldMatrix;
-        Gizmos.DrawFrustum(Vector3.zero, 40.0f, 0.5f, 0.05f, 16.0f / 9.0f);
+        Gizmos.DrawFrustum(Vector3.zero, camera != null ? camera.fieldOfView : 60.0f, 0.5f, 0.05f, camera != null ? camera.aspect : 16.0f / 9.0f);
         Gizmos.matrix = Matrix4x4.identity;
     }
 }

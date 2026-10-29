@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-public class ElevatorRope : MonoBehaviour
+public class ElevatorRope : MonoBehaviour, IClickable
 {
     public UnityEvent OnPulled;
     public Transform Rope;
@@ -22,7 +22,7 @@ public class ElevatorRope : MonoBehaviour
     float m_fDragStartY;
     float m_fDragStartPull;
 
-    public void BeginDrag()
+    public void Click(Player player)
     {
         Camera camera = Camera.main;
         if(camera == null)

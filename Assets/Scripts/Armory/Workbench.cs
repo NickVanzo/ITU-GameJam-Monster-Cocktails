@@ -3,14 +3,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
-public class Workbench : MonoBehaviour
+public class Workbench : MonoBehaviour, IClickable
 {
     const string BackLink = "back";
 
     public Player Player;
     public ViewSpot Spot;
-    [Tooltip("The guns that can be refitted here, browsed with the gun row.")]
-    public GunObject[] aGuns;
     [Tooltip("The gun lying on the bench.")]
     public WorkbenchDisplay Display;
 
@@ -19,22 +17,17 @@ public class Workbench : MonoBehaviour
     [SerializeField] Color SelectedColor = new(1.0f, 0.82f, 0.3f);
 
     WorkbenchPanel m_Panel;
-    int m_nGun;
-    int m_nRow;   // 0 = the gun, then one row per slot
+    GunObject m_Frame;
+    int m_nRow;
 
     public bool IsOpen()
     {
         return Player.IsEngagedAt(Spot);
     }
 
-    GunObject GetFrame()
-    {
-        return aGuns.Length > 0 ? aGuns[m_nGun] : null;
-    }
-
     int GetRowCount()
     {
-        return 1 + (GetFrame() != null ? GetFrame().aSlots.Count : 0);
+        return m_Frame != null ? m_Frame.aSlots.Count : 0;
     }
 
     void Awake()
@@ -43,15 +36,21 @@ public class Workbench : MonoBehaviour
         UIWindow.SetActive(false);
     }
 
-    // Start, so the gun being taken down is picked by then: the bench starts on that one if it has it.
     void Start()
     {
-        m_nGun = Mathf.Max(System.Array.IndexOf(aGuns, Loadout.Frame), 0);
-        Display.Show(GetFrame());
+        m_Frame = Loadout.Frame;
+        Display.Show(m_Frame);
     }
 
-    public void Open()
+    public void Click(Player player)
     {
+        Open(m_Frame);
+    }
+
+    public void Open(GunObject frame)
+    {
+        m_Frame = frame;
+        Display.Show(frame);
         Player.Engage(Spot);
     }
 
@@ -73,7 +72,7 @@ public class Workbench : MonoBehaviour
 
         bool bUp = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
         bool bDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
-        if(bUp != bDown)
+        if(bUp != bDown && GetRowCount() > 0)
         {
             m_nRow = (m_nRow + (bDown ? 1 : -1) + GetRowCount()) % GetRowCount();
             Refresh();
@@ -114,29 +113,20 @@ public class Workbench : MonoBehaviour
 
     void Change(int nRow, int nStep)
     {
-        if(nRow == 0)
+        if(nRow >= GetRowCount())
         {
-            if(aGuns.Length > 1)
-            {
-                m_nGun = (m_nGun + nStep + aGuns.Length) % aGuns.Length;
-                Display.Show(GetFrame());
-                Display.Pulse();
-                Sfx.Play(Sfx.Sounds.GunSelect);
-            }
+            return;
         }
-        else
-        {
-            GunObject frame = GetFrame();
-            GunSlotDefinition slot = frame.aSlots[nRow - 1];
-            List<GunAttachment> aChoices = slot.GetChoices();
 
-            if(aChoices.Count > 1)
-            {
-                int nIndex = aChoices.IndexOf(Loadout.GetFitted(frame, slot));
-                Loadout.Fit(frame, slot.eSlot, aChoices[(nIndex + nStep + aChoices.Count) % aChoices.Count]);
-                Display.Pulse();
-                Sfx.Play(Sfx.Sounds.GunSelect);
-            }
+        GunSlotDefinition slot = m_Frame.aSlots[nRow];
+        List<GunAttachment> aChoices = slot.GetChoices();
+
+        if(aChoices.Count > 1)
+        {
+            int nIndex = aChoices.IndexOf(Loadout.GetFitted(m_Frame, slot));
+            Loadout.Fit(m_Frame, slot.eSlot, aChoices[(nIndex + nStep + aChoices.Count) % aChoices.Count]);
+            Display.Pulse();
+            Sfx.Play(Sfx.Sounds.GunSelect);
         }
 
         Refresh();
@@ -144,38 +134,28 @@ public class Workbench : MonoBehaviour
 
     void Refresh()
     {
-        GunObject frame = GetFrame();
-
-        string sGun = frame != null ? frame.sDisplayName.ToUpper() : "NO GUNS";
-        m_Panel.GunName.text = Highlight(Arrows(0, $"[{sGun}]"), m_nRow == 0);
+        m_Panel.GunName.text = m_Frame != null ? m_Frame.sDisplayName.ToUpper() : "NO GUN";
 
         var slots = new StringBuilder();
         var description = new StringBuilder();
-        if(frame != null)
+        for(int i = 0; i < GetRowCount(); i++)
         {
-            for(int i = 0; i < frame.aSlots.Count; i++)
-            {
-                GunAttachment fitted = Loadout.GetFitted(frame, frame.aSlots[i]);
-                AppendRow(slots, i + 1, Nicify(frame.aSlots[i].eSlot.ToString()), fitted != null ? fitted.DisplayName.ToUpper() : "NONE");
-            }
-
-            GunAttachment selected = m_nRow > 0 ? Loadout.GetFitted(frame, frame.aSlots[m_nRow - 1]) : null;
-            if(selected != null)
-            {
-                foreach(StatChange change in selected.aStatChanges)
-                {
-                    description.Append(Describe(change)).Append('\n');
-                }
-            }
+            GunAttachment fitted = Loadout.GetFitted(m_Frame, m_Frame.aSlots[i]);
+            AppendRow(slots, i, Nicify(m_Frame.aSlots[i].eSlot.ToString()), fitted != null ? fitted.DisplayName.ToUpper() : "NONE");
         }
-        else
+
+        GunAttachment selected = m_nRow < GetRowCount() ? Loadout.GetFitted(m_Frame, m_Frame.aSlots[m_nRow]) : null;
+        if(selected != null)
         {
-            slots.Append("ADD GUNS TO THE WORKBENCH'S GUN LIST");
+            foreach(StatChange change in selected.aStatChanges)
+            {
+                description.Append(Describe(change)).Append('\n');
+            }
         }
 
         m_Panel.Slots.text = slots.ToString();
         m_Panel.Description.text = description.ToString();
-        m_Panel.ShowStats(frame != null ? Loadout.Build(frame) : null);
+        m_Panel.ShowStats(m_Frame != null ? Loadout.Build(m_Frame) : null);
     }
 
     void AppendRow(StringBuilder builder, int nRow, string sLabel, string sValue)
@@ -208,7 +188,7 @@ public class Workbench : MonoBehaviour
         return $"{Nicify(change.eStat.ToString())} {sChange}";
     }
 
-    static string Nicify(string sName) 
+    public static string Nicify(string sName)
     {
         return Regex.Replace(sName, "(?<=[a-z])(?=[A-Z])", " ").ToUpper();
     }

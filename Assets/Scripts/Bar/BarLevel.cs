@@ -9,6 +9,7 @@ public class BarLevel : MonoBehaviour, ILevel
     public Camera BarCamera;
     public Player Player;
     public ViewSpot ArrivalSpot;
+    public ViewSpot BagSpot;
     [Tooltip("The elevator in the bar - Elevator sounds come from here while the camera sinks or rises")]
     public Transform BarElevator;
 

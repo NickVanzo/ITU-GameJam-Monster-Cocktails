@@ -56,9 +56,6 @@ public class HeldGun : HeldItem
 [CreateAssetMenu(menuName = "FPS/Gun")]
 public class GunObject : EquippableObject
 {
-    [Tooltip("Lies on the workbench as a rigidbody. Colliders are optional: a box around its meshes is added if it has none.")]
-    public GameObject DisplayModel;
-
     public float fBaseRecoil = 0.8f; // Todo : Change this !!!
     public List<GunSlotDefinition> aSlots = new();
     [SerializeReference, SubclassPicker] public GunTrigger Trigger;
@@ -73,8 +70,6 @@ public class GunObject : EquippableObject
     public Vector3 vReloadSpinAxis = Vector3.right;
     public Vector3 vReloadSpinPivot;
     public float fReloadSpinYaw = 25.0f;
-
-    public override GameObject BagModel => DisplayModel != null ? DisplayModel : ViewModel;
 
     protected override HeldItem CreateHeld(IWielder wielder) => new HeldGun(this, wielder);
 }

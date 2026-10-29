@@ -31,4 +31,15 @@ public static class MeshUtil
 
         return bounds;
     }
+
+    // Turns the model the way it'd lie in a bag: thinnest side up, longest side along the grid's x.
+    public static void LayFlat(Transform model, Transform holder)
+    {
+        Vector3 vSize = MeshBounds(model, holder).size;
+        Vector3[] aAxes = { Vector3.right, Vector3.up, Vector3.forward };
+        System.Array.Sort(new[] { vSize.x, vSize.y, vSize.z }, aAxes);
+
+        // aAxes now runs thinnest to longest. This sends the thinnest to up and the middle one to forward, so the longest ends up on x.
+        model.localRotation = Quaternion.Inverse(Quaternion.LookRotation(aAxes[1], aAxes[0])) * model.localRotation;
+    }
 }

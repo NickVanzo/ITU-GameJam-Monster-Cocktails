@@ -29,6 +29,7 @@ public class Player : MonoBehaviour
     [SerializeField] private Button goUpUIButton;
     [SerializeField] private Button goDownUIButton;
     private ViewSpot currentSpot;
+    private ViewSpot returnSpot;
     private bool engaged;
     private int engagedFrame;
     private Coroutine transitionCoroutine;
@@ -92,14 +93,9 @@ public class Player : MonoBehaviour
         {
             if (direction == BarMovementDirections.Down)
             {
-                SetEngaged(false);                
+                SetEngaged(false);
+                GoTo(returnSpot);
             }
-            return;
-        }
-
-        if (direction == BarMovementDirections.Up && currentSpot.bEngageable)
-        {
-            SetEngaged(true);
             return;
         }
 
@@ -110,6 +106,7 @@ public class Player : MonoBehaviour
 
     public void Engage(ViewSpot spot)
     {
+        returnSpot = currentSpot;
         GoTo(spot);
         SetEngaged(true);
     }
@@ -172,7 +169,7 @@ public class Player : MonoBehaviour
 
     private bool CanMove(BarMovementDirections direction)
     {
-        return !engaged && (currentSpot.Neighbour(direction) != null || direction == BarMovementDirections.Up && currentSpot.bEngageable);
+        return !engaged && currentSpot.Neighbour(direction) != null;
     }
 
     // todo : fucking coroutines man lmao

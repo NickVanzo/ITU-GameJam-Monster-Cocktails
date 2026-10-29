@@ -83,6 +83,8 @@ public abstract class EquippableObject : ScriptableObject
 
     [Tooltip("The model held in hand at FPS time")]
     public GameObject ViewModel;
+    [Tooltip("The model shown in the bar: on the armory wall, in the bag and on the workbench. The ViewModel is used when left empty.")]
+    public GameObject DisplayModel;
 
     [Header("Hand")]
     public Vector3 vHandOffset = new(0.0f, -0.193f, 0.097f);
@@ -107,8 +109,20 @@ public abstract class EquippableObject : ScriptableObject
     [Tooltip("Cells it takes in the bag at the loadout bench, drawn as the bench camera sees it. Left at 0 x 0, it's the box around the model.")]
     public BagShape BagShape = new();
 
-    // What gets laid in the bag at the loadout bench.
-    public virtual GameObject BagModel => ViewModel;
+    public GameObject PresentationModel => DisplayModel != null ? DisplayModel : ViewModel;
+
+    public Transform SpawnPresentation(Transform parent)
+    {
+        Transform model = Instantiate(PresentationModel, parent, false).transform;
+
+        // Only the look is wanted here, not the lights or scripts meant for the hand.
+        foreach(Behaviour behaviour in model.GetComponentsInChildren<Behaviour>())
+        {
+            behaviour.enabled = false;
+        }
+
+        return model;
+    }
 
 #if UNITY_EDITOR
     // Lets the bag redraw while a shape is being drawn in play mode.

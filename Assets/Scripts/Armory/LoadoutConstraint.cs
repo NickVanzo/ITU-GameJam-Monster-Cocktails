@@ -5,6 +5,7 @@ public class LoadoutConstraint : MonoBehaviour
 {
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int TintId = Shader.PropertyToID("_Tint");
+    static readonly int EmissiveColorId = Shader.PropertyToID("_EmissiveColor");
 
     class Packed
     {
@@ -50,8 +51,6 @@ public class LoadoutConstraint : MonoBehaviour
     public float fPivotScale = 1.0f;
 
     [Header("Packing")]
-    [Tooltip("Put in the loadout when it has no offhand items yet, so there's something to pack. Match the FPS player's OffhandItems.")]
-    public EquippableObject[] aStartingOffhand = new EquippableObject[0];
     [Tooltip("Scales the item models in the bag. Without a BagShape on the item, it changes how many cells they take too.")]
     public float fModelScale = 1.0f;
     [SerializeField] float fDragLift = 0.15f;
@@ -72,6 +71,10 @@ public class LoadoutConstraint : MonoBehaviour
     int m_nSpill;
     bool bShapeEdited;
     Packed m_Dragged;
+    EquippableObject m_Held;
+    bool bPlacing;
+    bool bPacking;
+    BagSlot m_HeldFrom;
     LoadoutBench m_Bench;
     MaterialPropertyBlock m_CellBlock;
     MaterialPropertyBlock m_TintBlock;
@@ -101,17 +104,30 @@ public class LoadoutConstraint : MonoBehaviour
         m_CellBlock = new MaterialPropertyBlock();
         m_TintBlock = new MaterialPropertyBlock();
         m_TintBlock.SetColor(TintId, BlockedColor);
+        m_TintBlock.SetColor(EmissiveColorId, BlockedColor);
 
         FaceBenchCamera();
         BuildCells();
 
-        if(Loadout.Offhand.Count == 0)
-        {
-            Loadout.Offhand.AddRange(aStartingOffhand);
-        }
-
         Loadout.GetCarried(m_aCarried);
         Restock();
+    }
+
+    public void Hold(EquippableObject item)
+    {
+        m_Held = item;
+    }
+
+    void TakeHeld()
+    {
+        m_Dragged = m_aPacked.Find(packed => packed.Item == m_Held);
+        m_Held = null;
+        if(m_Dragged != null)
+        {
+            m_HeldFrom = m_Dragged.Slot;
+            bPlacing = true;
+            bPacking = true;
+        }
     }
 
     // Numbers the cells left to right and top to bottom as the bench camera sees them, the same way shapes are drawn.
@@ -185,9 +201,17 @@ public class LoadoutConstraint : MonoBehaviour
         {
             HandleInput();
         }
-        else if(m_Dragged != null)
+        else
         {
-            Drop();
+            if(m_Dragged != null)
+            {
+                if(bPlacing)
+                {
+                    m_Dragged.Slot = m_HeldFrom;
+                }
+                Drop();
+            }
+            bPacking = false;
         }
 
         foreach(Packed packed in m_aPacked)
@@ -223,27 +247,22 @@ public class LoadoutConstraint : MonoBehaviour
         }
         m_aPacked.Clear();
         m_Dragged = null;
+        bPlacing = false;
         m_nSpill = 0;
-
-        if(Loadout.Packing.Count > m_aCarried.Count)
-        {
-            Loadout.Packing.RemoveRange(m_aCarried.Count, Loadout.Packing.Count - m_aCarried.Count);
-        }
 
         foreach(EquippableObject item in m_aCarried)
         {
-            Packed packed = Spawn(item);
-            if(m_aPacked.Count < Loadout.Packing.Count)
-            {
-                packed.Slot = Loadout.Packing[m_aPacked.Count];
-            }
-            else
+            m_aPacked.Add(Spawn(item));
+        }
+
+        foreach(Packed packed in m_aPacked)
+        {
+            if(!Loadout.Packing.TryGetValue(packed.Item, out packed.Slot))
             {
                 packed.Slot = FindFreeSlot(packed);
-                Loadout.Packing.Add(packed.Slot);
+                Loadout.Packing[packed.Item] = packed.Slot;
             }
 
-            m_aPacked.Add(packed);
             Follow(packed, true);
         }
 
@@ -258,18 +277,11 @@ public class LoadoutConstraint : MonoBehaviour
         var shape = new BagShape { vSize = Vector2Int.one };
         var packed = new Packed { Item = item, Holder = holder, aRenderers = new Renderer[0] };
 
-        if(item.BagModel != null)
+        if(item.PresentationModel != null)
         {
-            Transform model = Instantiate(item.BagModel, holder, false).transform;
+            Transform model = item.SpawnPresentation(holder);
             model.localScale *= fModelScale;
-
-            // Only the look is wanted here, not the lights or scripts meant for the hand.
-            foreach(Behaviour behaviour in model.GetComponentsInChildren<Behaviour>())
-            {
-                behaviour.enabled = false;
-            }
-
-            LayFlat(model, holder);
+            MeshUtil.LayFlat(model, holder);
 
             // Centred over its cells, resting on top of them.
             Bounds bounds = MeshUtil.MeshBounds(model, holder);
@@ -288,23 +300,11 @@ public class LoadoutConstraint : MonoBehaviour
         return packed;
     }
 
-    // Turns the model the way it'd lie in a bag: thinnest side up, longest side along the grid's x.
-    static void LayFlat(Transform model, Transform holder)
-    {
-        Vector3 vSize = MeshUtil.MeshBounds(model, holder).size;
-        Vector3[] aAxes = { Vector3.right, Vector3.up, Vector3.forward };
-        System.Array.Sort(new[] { vSize.x, vSize.y, vSize.z }, aAxes);
-
-        // aAxes now runs thinnest to longest. This sends the thinnest to up and the middle one to forward, so the longest ends up on x.
-        model.localRotation = Quaternion.Inverse(Quaternion.LookRotation(aAxes[1], aAxes[0])) * model.localRotation;
-    }
-
     int CellsFor(float fSize)
     {
         return Mathf.Max(1, Mathf.CeilToInt(fSize / CellPitch - 0.01f));
     }
 
-    // packed isn't in m_aPacked yet, so the counts are everyone else's.
     BagSlot FindFreeSlot(Packed packed)
     {
         CountCells();
@@ -345,10 +345,32 @@ public class LoadoutConstraint : MonoBehaviour
 
     void HandleInput()
     {
-        // Checked before the cursor, so letting go with the cursor off the bag still drops it.
-        if(m_Dragged != null && !Input.GetMouseButton(0))
+        if(m_Held != null)
         {
+            TakeHeld();
+        }
+
+        if(bPlacing && Input.GetMouseButtonDown(0))
+        {
+            bPlacing = false;
+        }
+
+        // Checked before the cursor, so letting go with the cursor off the bag still drops it.
+        if(m_Dragged != null && !bPlacing && !Input.GetMouseButton(0))
+        {
+            Packed dropped = m_Dragged;
             Drop();
+            if(!dropped.aShape.Exists(vShapeCell => InGrid(dropped.CellOf(vShapeCell))))
+            {
+                Loadout.Remove(dropped.Item);
+                Loadout.GetCarried(m_aCarried);
+                Restock();
+            }
+
+            if(bPacking && Loadout.bFitsBag)
+            {
+                m_Bench.Close();
+            }
             return;
         }
 
@@ -398,6 +420,7 @@ public class LoadoutConstraint : MonoBehaviour
     void Drop()
     {
         m_Dragged = null;
+        bPlacing = false;
         Validate();
     }
 
@@ -441,6 +464,11 @@ public class LoadoutConstraint : MonoBehaviour
         System.Array.Clear(m_aCounts, 0, m_aCounts.Length);
         foreach(Packed packed in m_aPacked)
         {
+            if(!Loadout.Packing.ContainsKey(packed.Item))
+            {
+                continue;
+            }
+
             foreach(Vector2Int vShapeCell in packed.aShape)
             {
                 Vector2Int vCell = packed.CellOf(vShapeCell);
@@ -457,13 +485,15 @@ public class LoadoutConstraint : MonoBehaviour
     {
         CountCells();
 
-        bool bAllFit = true;
-        for(int i = 0; i < m_aPacked.Count; i++)
+        Loadout.Unfit.Clear();
+        foreach(Packed packed in m_aPacked)
         {
-            Packed packed = m_aPacked[i];
             bool bFits = Fits(packed);
-            bAllFit &= bFits;
-            Loadout.Packing[i] = packed.Slot;
+            if(!bFits)
+            {
+                Loadout.Unfit.Add(packed.Item);
+            }
+            Loadout.Packing[packed.Item] = packed.Slot;
 
             foreach(Renderer renderer in packed.aRenderers)
             {
@@ -480,8 +510,6 @@ public class LoadoutConstraint : MonoBehaviour
                 m_aCells[x, y].SetPropertyBlock(m_CellBlock);
             }
         }
-
-        Loadout.bFitsBag = bAllFit;
     }
 
     bool Fits(Packed packed)

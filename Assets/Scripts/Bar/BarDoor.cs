@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class BarDoor : MonoBehaviour
+public class BarDoor : MonoBehaviour, IClickable
 {
     public Transform Hinge;
     public TMP_Text SignText;
@@ -46,7 +46,7 @@ public class BarDoor : MonoBehaviour
         Hinge.localRotation = Quaternion.RotateTowards(Hinge.localRotation, TargetRotation(), fSwingSpeed * Time.deltaTime);
     }
 
-    public void Toggle()
+    public void Click(Player player)
     {
         TimeManager time = TimeManager.Instance;
         if(time == null)

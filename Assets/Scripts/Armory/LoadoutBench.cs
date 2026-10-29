@@ -1,18 +1,18 @@
 using System.Text;
 using UnityEngine;
 
-public class LoadoutBench : MonoBehaviour
+public class LoadoutBench : MonoBehaviour, IClickable
 {
     const string BackLink = "back";
 
     public Player Player;
     public ViewSpot Spot;
-    public ArmoryDisplay Rack;
 
     [Tooltip("The LoadoutPanel, only shown at the bench. Its back button is a clickable <link> tag, so keep it on a Screen Space canvas.")]
     public GameObject UIWindow;
 
     LoadoutPanel m_Panel;
+    LoadoutConstraint m_Bag;
 
     public bool IsOpen()
     {
@@ -22,12 +22,25 @@ public class LoadoutBench : MonoBehaviour
     void Awake()
     {
         m_Panel = UIWindow.GetComponent<LoadoutPanel>();
+        m_Bag = GetComponentInChildren<LoadoutConstraint>();
         UIWindow.SetActive(false);
     }
 
-    public void Open()
+    public void Click(Player player)
     {
+        player.Engage(Spot);
+    }
+
+    public void Pack(EquippableObject item)
+    {
+        Loadout.Add(item);
+        m_Bag.Hold(item);
         Player.Engage(Spot);
+    }
+
+    public void Close()
+    {
+        Player.Move(BarMovementDirections.Down);
     }
 
     void Update()
@@ -45,17 +58,9 @@ public class LoadoutBench : MonoBehaviour
             return;
         }
 
-        bool bUp = Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow);
-        bool bDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
-        if(bUp != bDown)
-        {
-            Rack.Step(bDown ? 1 : -1);
-            Refresh();
-        }
-
         if(Input.GetMouseButtonDown(0) && m_Panel.FindLinkUnderCursor() == BackLink)
         {
-            Player.Move(BarMovementDirections.Down);
+            Close();
         }
     }
 

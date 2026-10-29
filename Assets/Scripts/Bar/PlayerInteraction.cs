@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class PlayerInteraction : MonoBehaviour
@@ -13,6 +15,7 @@ public class PlayerInteraction : MonoBehaviour
     [SerializeField] private float inspectionRotationSpeed = 0.3f;
 
     private static readonly KeyCode[] InputKeys = (KeyCode[])System.Enum.GetValues(typeof(KeyCode));
+    private static readonly List<RaycastResult> uiHits = new();
     private Player player;
     private ShopItem hoveredItem;
     private ShopItem inspectedItem;
@@ -36,7 +39,7 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         // The bench panels own interactions while they are open.
-        if (player != null && player.Engaged)
+        if ((player != null && player.Engaged) || IsCursorOverUI())
         {
             UpdateHoveredItem(null);
             return;
@@ -158,38 +161,7 @@ public class PlayerInteraction : MonoBehaviour
         }
         else
         {
-            HandleObjectClick(target);
-        }
-    }
-
-    // todo: ts has to go kinda..
-    private void HandleObjectClick(GameObject target)
-    {
-        BarDoor barDoor = target.GetComponentInParent<BarDoor>();
-        if (barDoor != null)
-        {
-            barDoor.Toggle();
-            return;
-        }
-
-        LoadoutBench loadoutBench = target.GetComponentInParent<LoadoutBench>();
-        if (loadoutBench != null)
-        {
-            loadoutBench.Open();
-            return;
-        }
-
-        Workbench workbench = target.GetComponentInParent<Workbench>();
-        if (workbench != null)
-        {
-            workbench.Open();
-            return;
-        }
-
-        ElevatorRope rope = target.GetComponentInParent<ElevatorRope>();
-        if (rope != null)
-        {
-            rope.BeginDrag();
+            target.GetComponentInParent<IClickable>()?.Click(player);
         }
     }
 
@@ -211,6 +183,20 @@ public class PlayerInteraction : MonoBehaviour
     private void OnDisable()
     {
         EndInspection();
+    }
+
+    private static bool IsCursorOverUI()
+    {
+        EventSystem events = EventSystem.current;
+        if (events == null) return false;
+
+        events.RaycastAll(new PointerEventData(events) { position = Input.mousePosition }, uiHits);
+        foreach (RaycastResult hit in uiHits)
+        {
+            Canvas canvas = hit.module.GetComponent<Canvas>();
+            if (canvas != null && canvas.renderMode != RenderMode.WorldSpace) return true;
+        }
+        return false;
     }
 
     // TODO : proper layer mask for this
