@@ -278,7 +278,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b98e05086c55ac4dbc5cefb13b143b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GraphicsManager
-  nTargetResHeight: 270
+  nTargetRes: 4
+  aTargetRes:
+  - {x: 256, y: 144}
+  - {x: 320, y: 180}
+  - {x: 480, y: 270}
+  - {x: 640, y: 360}
+  - {x: 800, y: 450}
+  - {x: 960, y: 540}
+  - {x: 1280, y: 720}
+  - {x: 1920, y: 1080}
+  - {x: -1, y: -1}
 --- !u!4 &417767430
 Transform:
   m_ObjectHideFlags: 0
